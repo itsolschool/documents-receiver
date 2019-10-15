@@ -1,0 +1,7 @@
+py-trello
+google-api-python-client
+oauth2client
+peewee
+requests
+pytelegrambotapi
+pytils
