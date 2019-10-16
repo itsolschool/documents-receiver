@@ -6,11 +6,13 @@ trello_secret = environ.get('TRELLO_SECRET')
 github_username = environ.get('GITHUB_USERNAME')
 github_password = environ.get('GITHUB_PASSWORD')
 
-telegram_token = ''  # Гугл расскажет как получить его у BotFather
-tg_id = int(environ.get('TELEGRAM_ID'))  # Гугл покажет как получить телеграмм id
-tg_username = environ.get('TELEGRAM_USERNAME')  # Без @ в начале
-firstname = "ivan"
-lastname = "ivanov"
+telegram_token = environ.get('TELEGRAM_TOKEN')  # Гугл расскажет как получить его у BotFather
+tg_id = int(environ.get('TELEGRAM_ADMIN_ID'))  # Гугл покажет как получить телеграмм id
+tg_username = environ.get('TELEGRAM_ADMIN_USERNAME')  # Без @ в начале
+firstname = environ.get('TELEGRAM_ADMIN_FIRST')
+lastname = environ.get('TELEGRAM_ADMIN_LAST')
+
+gdrive_secret = environ.get('GDRIVE_SECRET')
 
 proxy = ''  # Передавать строку формата http://username:password@ip:port, если прокси не нужен, оставьте просто ''
 

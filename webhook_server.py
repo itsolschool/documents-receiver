@@ -1,4 +1,5 @@
 import logging
+
 import telebot
 from flask import Flask, request
 
@@ -24,6 +25,11 @@ if __name__ != '__main__':
 def telegram():
     bot.process_new_updates([telebot.types.Update.de_json(request.stream.read().decode("utf-8"))])
     return "!", 200
+
+
+@flask_app.route('/')
+def main():
+    return 'Hello world!'
 
 
 if __name__ == '__main__':
