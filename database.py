@@ -1,14 +1,15 @@
 from random import randint
+from threading import Thread
 
 from peewee import *
 from telebot import types
-from threading import Thread
 from urllib3.util import parse_url
 
 import apidrive as drive
 import apigithub as git
 import apitrello as trello
 import config
+
 
 def get_database():
     parsed_url = parse_url(config.db_url)
@@ -24,7 +25,7 @@ def get_database():
     )
 
 
-db = PostgresqlDatabase()
+db = get_database()
 token_lenght = 10
 
 
@@ -153,6 +154,7 @@ Team.create_table()
 if not Team.select().where(Team.name == config.main_name).exists():
     team = Team.create(name=config.main_name, token=Team.genToken(), balance=0)
 
+
 # # team = Team.get(Team.name == config.main_name)
 # print(Team.get_by_id(1).name)
 
@@ -247,15 +249,16 @@ class Document(Model):
         def thread():
             trello.addFile(fileName=self.name, link=drive.getFileLink(self.fileId), team=self.team)
             self.team.sendAll(message="Документ '" + self.name + "' был принят", bot=bot)
+
         Thread(target=thread).start()
 
         self.status = 1
         self.save()
 
     def reject(self, bot):
-
         def thread():
             self.team.sendAll(message="Документ '" + self.name + "' был отклонен", bot=bot)
+
         Thread(target=thread).start()
 
         self.status = -1
