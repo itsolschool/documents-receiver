@@ -3,8 +3,8 @@ from trello import TrelloClient
 import config
 
 client = TrelloClient(
-    api_key=config.trello_api,
-    api_secret=config.trello_secret_api
+    api_key=config.trello_api_key,
+    api_secret=config.trello_secret
 )
 
 def getBoard():

@@ -3,13 +3,28 @@ from random import randint
 from peewee import *
 from telebot import types
 from threading import Thread
+from urllib3.util import parse_url
 
 import apidrive as drive
 import apigithub as git
 import apitrello as trello
 import config
 
-db = SqliteDatabase("main.db")
+def get_database():
+    parsed_url = parse_url(config.db_url)
+
+    # Берём из auth имя пользователя и пароль от БД
+    username, password = parsed_url.auth.split(':')
+
+    return PostgresqlDatabase(
+        parsed_url.path[1:],  # Пропускаем первый "/", так как он не является названием БД
+        host=parsed_url.host,
+        user=username,
+        password=password
+    )
+
+
+db = PostgresqlDatabase()
 token_lenght = 10
 
 
