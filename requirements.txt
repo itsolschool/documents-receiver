@@ -5,3 +5,6 @@ peewee
 requests
 pytelegrambotapi
 pytils
+flask
+gunicorn
+psycopg2
