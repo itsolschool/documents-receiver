@@ -169,6 +169,7 @@ class User(Model):
 
     class Meta:
         database = db
+        table_name = 'bot_user'
 
     @staticmethod
     def add(tg_id, username, first_name, last_name, team):
