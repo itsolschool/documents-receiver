@@ -1,9 +1,9 @@
-import os
 import logging
+import os
 
 import telebot
-import apidrive as drive
 
+import apidrive as drive
 import config
 import database as db
 import markups as mk
@@ -41,12 +41,15 @@ def checkUser(function):
             function(message=message, user=user)
         else:
             registration(message)
+
     return the_wrapper_around_the_original_function
+
 
 def getReplyMarkup(number):
     markup = telebot.types.ReplyKeyboardMarkup()
     markup.add(*[str(i) for i in range(number)])
     return markup
+
 
 # Функция создания красивого сообщения - списка из листа команд
 def teamsToMessage(teams):
@@ -102,7 +105,6 @@ def tokenToLink(token):
 
 
 def registration(message):
-
     # Потыкал ссылки вида t.me/abcdbot?start=123 и просто увидел что код идет с 7 символа
     team = db.Team.getTeam(message.text[7:])
     if team != None and team.balance > 0:
@@ -381,7 +383,8 @@ def getDoc(message, docName, user):
                                                   "'Открыть доступ', после чего нажмите на 'копировать ссылку общего доступа'")
                 raise Exception
             else:
-                db.Document.add(type=docName, link=message.text, team=user.team, sender=user.first_name + " " + user.last_name)
+                db.Document.add(type=docName, link=message.text, team=user.team,
+                                sender=user.first_name + " " + user.last_name)
                 bot.send_message(message.chat.id, "Ваш документ был успешно отправлен на проверку")
                 main_menu(message)
         else:
@@ -389,7 +392,6 @@ def getDoc(message, docName, user):
             raise Exception
     except:
         bot.register_next_step_handler(message=message, callback=getDoc, docName=docName, user=user)
-
 
 
 @bot.message_handler(commands=['checkDocs'])
@@ -452,6 +454,7 @@ def verifyDocument(message, document, team, number):
     elif message.text == 'Главное меню':
         main_menu(message)
 
+
 def addMessage(message, document, team, accept):
     if message.text == "Да":
         bot.send_message(message.chat.id, "Введите комментарий для отправки команде",
@@ -504,6 +507,7 @@ def help(message, user):
                          "/exit - Выход из команды организаторов(вы не сможете вернуться самостоятельно)\n\n" +
                          "/help - Получить инструкцию")
 
+
 @bot.message_handler(commands=['sendAll'])
 @checkUser
 def getMessage(message, user):
@@ -511,6 +515,7 @@ def getMessage(message, user):
         bot.send_message(message.chat.id, "Отправьте сообщение, которое вы хотите разослать:",
                          reply_markup=mk.back)
         bot.register_next_step_handler(message=message, callback=sendAll, user=user)
+
 
 def sendAll(message, user, team=None):
     if team == None:
