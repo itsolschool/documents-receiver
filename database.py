@@ -1,3 +1,4 @@
+import logging
 from random import randint
 from threading import Thread
 
@@ -192,6 +193,10 @@ User.create_table()
 
 # Добавление админа при запуске бота
 if not User.select().where(User.tg_id == config.tg_id).exists():
+    logging.info('create user', tg_id=config.tg_id,
+                 username=config.tg_username,
+                 first_name=config.firstname,
+                 last_name=config.lastname)
     User.add(tg_id=config.tg_id,
              username=config.tg_username,
              first_name=config.firstname,
