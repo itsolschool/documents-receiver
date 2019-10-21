@@ -3,6 +3,7 @@ import logging
 import telebot
 from flask import Flask, request
 
+from config import webhook_url
 from main_bot import bot
 
 flask_app = Flask(__name__)
@@ -21,8 +22,9 @@ if __name__ != '__main__':
 
 @flask_app.route('/sethook')
 def set_hook():
-    bot.set_webhook('https://itsolschool-bot-1.herokuapp.com/hook')
-    return 'hook set to '
+    bot.set_webhook(webhook_url)
+    logging.info('webhook set to', webhook_url)
+    return 'hook successfully set'
 
 
 @flask_app.route('/hook', methods=['POST'])
