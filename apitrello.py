@@ -9,9 +9,9 @@ client = TrelloClient(
 
 def getBoard():
     for board in client.list_boards():
-        if board.name == config.main_name:
+        if board.name == config.org_team_name:
             return board
-    board = client.add_board(board_name=config.main_name, permission_level="private", default_lists=False)
+    board = client.add_board(board_name=config.org_team_name, permission_level="private", default_lists=False)
     return board
 
 

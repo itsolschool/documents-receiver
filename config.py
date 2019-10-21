@@ -18,7 +18,8 @@ proxy = ''  # Передавать строку формата http://username:p
 
 db_url = environ.get('DATABASE_URL')
 
-main_name = "ItSchool2019"
+org_team_name = "ItSchool2019"
+org_team_capacity = 10000
 docs = ['Заявка на участие',
         'Подготовка к мастерской',
         'Концепция',

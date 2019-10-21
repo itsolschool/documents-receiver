@@ -40,7 +40,7 @@ googleTypes = {'application/vnd.google-apps.document': ['application/pdf', ".pdf
 
 
 def getMainFolder():
-    folders = service.files().list(q='name = "' + config.main_name + '" and trashed = False',
+    folders = service.files().list(q='name = "' + config.org_team_name + '" and trashed = False',
                                    fields='files(id)').execute().get('files')
     if len(folders) > 0:
         return folders[0].get('id')
@@ -50,7 +50,7 @@ def getMainFolder():
 
 def createMainFolder():
     file_metadata = {
-        'name': config.main_name,
+        'name': config.org_team_name,
         'mimeType': 'application/vnd.google-apps.folder'
     }
     return service.files().create(body=file_metadata, fields='id').execute().get('id')

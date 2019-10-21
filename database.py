@@ -152,8 +152,8 @@ class Team(Model):
 Team.create_table()
 
 # Создание команды организаторов
-if not Team.select().where(Team.name == config.main_name).exists():
-    team = Team.create(name=config.main_name, token=Team.genToken(), balance=0)
+if not Team.select().where(Team.name == config.org_team_name).exists():
+    team = Team.create(name=config.org_team_name, token=Team.genToken(), balance=config.org_team_capacity)
 
 
 # # team = Team.get(Team.name == config.main_name)
@@ -202,7 +202,7 @@ if not User.select().where(User.tg_id == config.tg_id).exists():
              username=config.tg_username,
              first_name=config.firstname,
              last_name=config.lastname,
-             team=Team.get(Team.name == config.main_name))
+             team=Team.get(Team.name == config.org_team_name))
 
 
 class Document(Model):
