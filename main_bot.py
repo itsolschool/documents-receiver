@@ -324,6 +324,10 @@ def addTeamMember(message, team):
 @bot.message_handler(commands=['exit'])
 @checkUser
 def exit(message, user):
+    bot.send_message(message.chat.id, 'Команда отключена :(\nОбратитесь к администратору, чтобы выйти из команды.')
+    return
+
+    # noinspection PyUnreachableCode
     bot.send_message(message.chat.id, "Вы вышли из команды '" + user.team.name + "'")
     bot.send_message(message.chat.id, "У вас больше нет доступа к боту",
                      reply_markup=telebot.types.ReplyKeyboardRemove())
