@@ -106,10 +106,11 @@ def tokenToLink(token):
 
 def registration(message):
     # Потыкал ссылки вида t.me/abcdbot?start=123 и просто увидел что код идет с 7 символа
-    team = db.Team.getTeam(message.text[7:])
+    team = db.Team.get_by_token(message.text[7:])
     if team != None and team.balance > 0:
         bot.send_message(message.chat.id, "Ваша ссылка верна, команда '" + team.name + "'")
         bot.send_message(message.chat.id, "Введите ваше имя")
+        # TODO все эти next_step_handler просто убийствинны. читать их невозможно)
         bot.register_next_step_handler(message=message, callback=getName, team=team)
     else:
         bot.send_message(message.chat.id, "Ваша ссылка недействительна")
@@ -135,6 +136,7 @@ def getSurname(message, team, name):
         start(message)
     except:
         bot.clear_step_handler_by_chat_id(message.chat.id)
+        # TODO чем раньше пользователь узнает о об ошибке - тем лучше, не надо на последнем шаге делать это.
         bot.send_message(message.chat.id, "Что-то пошло не так, перейдите по вашей ссылке снова")
     else:
         bot.send_message(message.chat.id, "Теперь вы участник команды '" + team.name + "'")
@@ -201,7 +203,7 @@ def getSchool(message, name):
 @checkUser
 def edit_team_menu(message, user):
     if user.team.name == config.org_team_name:
-        teams = db.Team.getTeamsList()
+        teams = db.Team.get_teams_list()
         bot.send_message(message.chat.id, "Вот список команд на данный момент:")
         bot.send_message(message.chat.id, teamsToMessage(teams), parse_mode='Markdown')
         bot.send_message(message.chat.id, "Нажмите на номер команды, которую вы хотите изменить",
@@ -239,6 +241,9 @@ def setTeam(message, team):
 
 
 def editTeam(message, team):
+    # TODO как только изменится название к кнопке надо будет менять это и тут. Кажется это не поддерживается
+
+    # TODO функция впринципе на рефакторинг, потому что слишком много тут всякого непонятного
     if message.text == 'Добавить участника':
         addTeamMember(message, team)
     elif message.text == 'Удалить участника':

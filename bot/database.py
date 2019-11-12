@@ -27,7 +27,7 @@ def get_database():
 
 
 db = get_database()
-token_lenght = 10
+token_length = 10
 
 
 class Team(Model):
@@ -43,29 +43,28 @@ class Team(Model):
         database = db
 
     @staticmethod
-    def getTeam(token):
+    def get_by_token(token):
         if Team.select().where(Team.token == token).exists():
             return Team.get(Team.token == token)
         else:
             return None
 
     @staticmethod
-    def genToken():
+    def gen_token():
         token = ""
-        for i in range(token_lenght):
+        for i in range(token_length):
             token += str(randint(0, 9))
 
         # Для случая, когда такой токен уже существует
         if Team.select().where(Team.token == token).exists():
-            return Team.genToken()
+            return Team.gen_token()
         return token
 
     @staticmethod
     def add(name, school, balance=5):
-        team = Team.create(name=name,
-                           school=school.title(),
-                           token=Team.genToken(),
-                           balance=balance)
+        team = Team.create(name=name, school=school.title(), token=Team.gen_token(), balance=balance)
+        # TODO опять кажется что от бд совсем не ожидается кастование каких-то интеграций с левыми api.
+        #  тем более не ожидается кастование новых тредов
         Thread(target=trello.createCard, args=[team]).start()
         Thread(target=git.createRepo, args=[team]).start()
         Thread(target=drive.createFolder, args=[team]).start()
@@ -73,12 +72,13 @@ class Team(Model):
 
     # Создание словаря c командами
     @staticmethod
-    def getTeamsList():
+    def get_teams_list():
         list = []
         for team in Team.select():
             list.append(team)
         return list
 
+    # TODO название метода не совпадает с содержимым... и кажется это можно сделать с помощью 1 запроса
     @staticmethod
     def getTeamsDocuments():
         teams = []
@@ -88,6 +88,7 @@ class Team(Model):
         return teams
 
     def getDoc(self, number):
+        # TODO вот эта конструкция есть в виде одного единственного метода - dict#get(int, default)
         try:
             documents = self.getNewDocs()
             return documents[number % len(documents)]
@@ -95,6 +96,7 @@ class Team(Model):
             return None
 
     def getNewDocs(self):
+        # TODO не нужно делать 3 запроса, если можно сделать один
         if Document.select().where((Document.team == self) & (Document.status == 0)).exists():
             return Document.select().where((Document.team == self) & (Document.status == 0))
         else:
@@ -124,6 +126,7 @@ class Team(Model):
             return []
 
     def addTeamMember(self):
+        # TODO кажется что можно не придумывать ещё одну переменную и вообще её возвращать
         token = self.token
         self.balance += 1
         self.save()
@@ -143,6 +146,7 @@ class Team(Model):
         else:
             return False
 
+    # TODO кажется этот метод делает слишком много логики из другого метода. надо бы её вынести отсюда
     def sendAll(self, message, bot, userExcept=None):
         for user in User.select().where(User.team == self):
             if user != userExcept:
@@ -153,7 +157,7 @@ Team.create_table()
 
 # Создание команды организаторов
 if not Team.select().where(Team.name == config.org_team_name).exists():
-    team = Team.create(name=config.org_team_name, token=Team.genToken(), balance=config.org_team_capacity)
+    team = Team.create(name=config.org_team_name, token=Team.gen_token(), balance=config.org_team_capacity)
 
 
 # # team = Team.get(Team.name == config.main_name)
@@ -184,6 +188,7 @@ class User(Model):
             return None
 
     def remove(self, bot):
+        # TODO текты неплохо бы вынести вообще в отдельный файл
         bot.send_message(self.tg_id, "Вы были исключены из школы It решений.\nТеперь у вас нет доступа к боту",
                          reply_markup=types.ReplyKeyboardRemove())
         bot.clear_step_handler_by_chat_id(self.tg_id)
@@ -222,6 +227,7 @@ class Document(Model):
 
     @staticmethod
     def add(type, link, team, sender):
+        # TODO в питоне не принято так создавать строки. есть str#format(...args) или с помощью %
         name = type + "_" + \
                team.name + "_v" + \
                str(len(Document.select().where((Document.team == team) & (Document.type == type))) + 1)
@@ -258,6 +264,7 @@ class Document(Model):
 
         Thread(target=thread).start()
 
+        # TODO вместо магических чисел можно использовать Enum, в данном случае IntEnum
         self.status = 1
         self.save()
 

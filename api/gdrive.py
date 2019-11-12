@@ -9,7 +9,7 @@ from apiclient import discovery
 from apiclient.http import MediaIoBaseDownload
 from oauth2client.file import Storage
 
-import apigithub as git
+import api.github as git
 import config
 
 APPLICATION_NAME = 'ItSchoolBot'
