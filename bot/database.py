@@ -6,9 +6,9 @@ from peewee import *
 from telebot import types
 from urllib3.util import parse_url
 
-import apidrive as drive
-import apigithub as git
-import apitrello as trello
+import api.gdrive as drive
+import api.github as git
+import api.trello as trello
 import config
 
 

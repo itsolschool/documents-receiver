@@ -3,10 +3,10 @@ import os
 
 import telebot
 
-import apidrive as drive
+import api.gdrive as drive
 import config
-import database as db
-import markups as mk
+import bot.database as db
+import bot.markups as mk
 
 
 def enable_proxy(proxy):

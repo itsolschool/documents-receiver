@@ -4,7 +4,7 @@ import telebot
 from flask import Flask, request
 
 from config import webhook_url
-from main_bot import bot
+from bot import bot
 
 flask_app = Flask(__name__)
 

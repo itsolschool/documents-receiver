@@ -7,7 +7,8 @@ CLIENT_SECRET_FILE = 'drive-python.json'
 APPLICATION_NAME = 'ItSchoolBot'
 credentials_file = 'drive-secret.json'
 
-def getCredentials():
+
+def get_gdrive_secret_token():
     try:
         import argparse
         flags = argparse.ArgumentParser(parents=[tools.argparser]).parse_args()
@@ -21,5 +22,6 @@ def getCredentials():
         credentials = tools.run_flow(flow, store, flags)
     return credentials
 
+
 if __name__ == '__main__':
-    getCredentials()
+    get_gdrive_secret_token()
