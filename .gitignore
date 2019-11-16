@@ -1,3 +1,5 @@
-venv
-drive-python.json
-drive-secret.json
+venv/
+./drive-python.json
+./drive-secret.json
+dist/
+./dev.sqlite3
