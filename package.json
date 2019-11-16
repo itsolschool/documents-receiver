@@ -1,0 +1,42 @@
+{
+  "name": "itsolschool-docs-bot",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "repository": "git@github.com:itsolschool/ItSchoolBot.git",
+  "author": "BANO.notIT <bano.notit@yandex.ru>",
+  "license": "MIT",
+  "private": true,
+  "devDependencies": {
+    "eslint": "^6.6.0",
+    "husky": "^3.0.9",
+    "prettier": "^1.19.1",
+    "sqlite3": "^4.1.0",
+    "ts-node": "^8.5.2",
+    "typescript": "^3.7.2"
+  },
+  "dependencies": {
+    "knex": "^0.20.2",
+    "objection": "^1.6.11",
+    "pg": "^7.12.1",
+    "telegraf": "^3.33.3"
+  },
+  "scripts": {
+    "lint": "prettier --write src/**/*.ts migrations/*.js"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
+  },
+  "prettier": {
+    "singleQuote": true,
+    "printWidth": 120,
+    "arrowParens": "always",
+    "tabWidth": 4,
+    "trailingComma": "none"
+  },
+  "engines": {
+    "node": "^10.0.0",
+    "yarn": "^1.16.0"
+  }
+}
