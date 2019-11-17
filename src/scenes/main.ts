@@ -12,7 +12,11 @@ scene
     .command('gdrive', checkUserAccess, Stage.enter('gdrive'))
     .command('check', async (ctx) => {
         const message = await ctx.reply('🔄 GDrive checking...');
-        await ctx.gdrive.checkOperational();
-        await ctx.telegram.editMessageText(ctx.chat.id, message.message_id, undefined, '✅ GDrive operational');
+        try {
+            await ctx.gdrive.checkOperational();
+            await ctx.telegram.editMessageText(ctx.chat.id, message.message_id, undefined, '✅ GDrive operational');
+        } catch (e) {
+            await ctx.telegram.editMessageText(ctx.chat.id, message.message_id, undefined, `❌ GDrive FAILED\n${e}`);
+        }
     });
 export default scene;
