@@ -1,7 +1,7 @@
 import { Model } from 'objection';
 import Team from './Team';
 
-export class User extends Model {
+export default class User extends Model {
     tgId!: number;
     fullName!: string;
     teamId!: number;

@@ -1,7 +1,7 @@
 import { __ } from '../helpers/strings';
 import { BaseScene } from 'telegraf';
 import Team from '../models/Team';
-import { User } from '../models/User';
+import User from '../models/User';
 
 // @ts-ignore
 const scene = new BaseScene('referral');
