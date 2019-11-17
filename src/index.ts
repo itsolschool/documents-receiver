@@ -1,11 +1,15 @@
-// Dependencies
-import { bot } from './helpers/bot';
-import { setupSession } from './helpers/session';
 import Knex from 'knex';
 import { Model } from 'objection';
-import setupStageAndStart from './helpers/stage';
-import Team from './models/Team';
 import attachUser from './middlewares/attachUser';
+
+import { bot } from './helpers/bot';
+import { setupRedisSession } from './helpers/redisSession';
+import Team from './models/Team';
+import { setupStage } from './helpers/stage';
+import { Stage } from 'telegraf';
+import { setupGDrive } from './helpers/gdrive';
+import * as fs from 'fs';
+import { REDIS_ACCESS_TOKEN_KEY } from './service/GDrive';
 
 
 async function setupDb() {
@@ -21,8 +25,19 @@ async function setupBot() {
     bot.catch(console.log);
 
     bot.use(attachUser);
-    setupSession(bot);
-    setupStageAndStart(bot);
+
+
+    const redis = setupRedisSession(bot, process.env.REDIS_URL);
+    const gdrive = setupGDrive(bot, JSON.parse(fs.readFileSync('client_secret.json', 'utf8')));
+
+    setupStage(bot);
+
+    bot.command('start', Stage.enter('referral'));
+
+
+    let token = await redis.getAsync(REDIS_ACCESS_TOKEN_KEY);
+    if (token)
+        gdrive.setCredentials(JSON.parse(token));
 
     bot.startPolling();
 }
@@ -32,19 +47,21 @@ async function setupFirstTeam() {
 
     if (!team) {
         console.log('No orgs team. Adding one...');
+
         team = new Team();
         team.setNewInviteToken();
         team.schoolName = 'croc';
-        team.name = 'Ораганизаторы';
+        team.name = 'Администраторы';
+        team.isAdmin = true;
 
         await Team.query().insert(team);
     }
 
-    console.log(`Orgs team invite link: t.me/itss_docs_bot?start=${team.inviteToken}`);
+    console.log(`Orgs team invite link: https://t.me/itss_docs_bot?start=${team.inviteToken}`);
 }
 
 Promise.resolve()
     .then(setupDb)
-    .then(setupBot)
     .then(setupFirstTeam)
+    .then(setupBot)
     .catch(console.error);
