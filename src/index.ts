@@ -9,7 +9,6 @@ import { setupStage } from './helpers/stage';
 import { Stage } from 'telegraf';
 import { setupGDrive } from './helpers/gdrive';
 import * as fs from 'fs';
-import { REDIS_ACCESS_TOKEN_KEY } from './service/GDrive';
 
 
 async function setupDb() {
@@ -27,17 +26,13 @@ async function setupBot() {
     bot.use(attachUser);
 
 
-    const redis = setupRedisSession(bot, process.env.REDIS_URL);
-    const gdrive = setupGDrive(bot, JSON.parse(fs.readFileSync('client_secret.json', 'utf8')));
+    setupRedisSession(bot, process.env.REDIS_URL);
+    await setupGDrive(bot, JSON.parse(fs.readFileSync('client_secret.json', 'utf8')));
 
     setupStage(bot);
 
     bot.command('start', Stage.enter('referral'));
 
-
-    let token = await redis.getAsync(REDIS_ACCESS_TOKEN_KEY);
-    if (token)
-        gdrive.setCredentials(JSON.parse(token));
 
     bot.startPolling();
 }

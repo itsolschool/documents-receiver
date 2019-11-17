@@ -1,16 +1,12 @@
 import Telegraf, { ContextMessageUpdate } from 'telegraf';
-import GDriveService, { Credentials, OAuthClientSettings } from '../service/GDrive';
+import GDriveService, { APP_ACCESS_TOKEN_KEY, OAuthClientSettings } from '../service/GDrive';
+import AppVar from '../models/AppVar';
 
-export function setupGDrive<T extends ContextMessageUpdate>(
-    bot: Telegraf<T>,
-    settings: OAuthClientSettings,
-    credentials?: Credentials
-) {
+export async function setupGDrive<T extends ContextMessageUpdate>(bot: Telegraf<T>, settings: OAuthClientSettings) {
     const gdrive = new GDriveService(settings);
 
-    if (credentials) {
-        gdrive.setCredentials(credentials);
-    }
+    let token = await AppVar.query().findById(APP_ACCESS_TOKEN_KEY);
+    if (token) gdrive.setCredentials(JSON.parse(token.value));
 
     bot.use((ctx, next) => {
         ctx.gdrive = gdrive;
