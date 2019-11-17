@@ -13,7 +13,7 @@ export default class Team extends Model {
 
     setNewInviteToken() {
         const sha1 = crypto.createHash('sha256');
-        const result = sha1.update(`&^qast^${this.name}  ${new Date}--${this.schoolName}`).digest('hex');
+        const result = sha1.update(`&^qast^${this.name}  ${new Date()}--${this.schoolName}`).digest('hex');
         this.inviteToken = result.slice(0, 10);
     }
 
