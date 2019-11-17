@@ -15,12 +15,16 @@
     "typescript": "^3.7.2"
   },
   "dependencies": {
+    "@types/bluebird": "^3.5.29",
+    "bluebird": "^3.7.1",
+    "googleapis": "^45.0.0",
     "knex": "^0.20.2",
     "lodash": "^4.17.15",
     "objection": "^1.6.11",
     "pg": "^7.12.1",
     "string-template": "^1.0.0",
-    "telegraf": "^3.33.3"
+    "telegraf": "^3.33.3",
+    "telegraf-session-redis": "^5.1.0"
   },
   "scripts": {
     "lint": "prettier --write src/**/*.ts migrations/*.js"
