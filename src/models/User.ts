@@ -4,26 +4,29 @@ import Team from './Team';
 export class User extends Model {
     tgId!: number;
     fullName!: string;
+    teamId!: number;
+    team!: Team;
 
     static tableName = 'bot_users';
     static idColumn = 'tgId';
 
     static jsonSchema = {
         type: 'object',
-        required: ['tgId', 'full_name'],
+        required: ['tgId', 'fullName', 'teamId'],
         properties: {
             tgId: { type: 'integer' },
-            full_name: { type: 'string' }
+            fullName: { type: 'string' },
+            teamId: { type: 'integer' }
         }
     };
 
     static relationMappings = {
-        group: {
+        team: {
             relation: Model.BelongsToOneRelation,
             modelClass: Team,
             join: {
                 from: 'bot_users.teamId',
-                to: 'teams.id'
+                to: 'teams.teamId'
             }
         }
     };
