@@ -7,20 +7,23 @@ import User from '../models/User';
 const scene = new BaseScene('referral');
 scene
     .enter(async (ctx) => {
-        const teams = await Team.query()
-            .where('inviteToken', ctx.message.text.slice(7))
-            .limit(1)
-            .eager('members');
-        const candidateTeam = teams[0];
-
-        console.log(candidateTeam);
+        let candidateTeam;
+        if (ctx.user) {
+            candidateTeam = await ctx.user.team.$query().eager('members');
+        } else {
+            const teams = await Team.query()
+                .where('inviteToken', ctx.message.text.slice(7))
+                .limit(1)
+                .eager('members');
+            candidateTeam = teams[0];
+        }
 
         if (!candidateTeam) {
             await ctx.reply(__('referral.wrongToken'));
             return;
         }
 
-        if (candidateTeam.capacity <= candidateTeam.members.length) {
+        if (candidateTeam.capacity <= candidateTeam.members.length && !ctx.user) {
             await ctx.reply(__('referral.overcrowded', { team: candidateTeam.name, count: candidateTeam.capacity }));
             return;
         }
@@ -44,18 +47,26 @@ scene
             return;
         }
 
-        console.log(ctx.session.candidateTeamId);
+        let user = ctx.user;
+        if (!user) {
+            user = await User.query()
+                .insert({
+                    tgId: ctx.from.id,
+                    fullName: ctx.message.text,
+                    teamId: ctx.session.candidateTeamId
+                })
+                .eager('team');
+        } else {
+            user = await User.query()
+                .patchAndFetchById(user.tgId, {
+                    fullName: ctx.message.text
+                })
+                .eager('team');
+        }
 
-        let user = await User.query().insert({
-            tgId: ctx.from.id,
-            fullName: ctx.message.text,
-            teamId: ctx.session.candidateTeamId
-        });
-
-        ctx.session.name = ctx.message.text;
         await ctx.reply(
             __('referral.final', {
-                team: 'tester',
+                team: user.team.name,
                 name: user.fullName
             })
         );
