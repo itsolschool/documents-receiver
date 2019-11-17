@@ -12,6 +12,7 @@ export default class Team extends Model {
     members!: User[];
     documents!: Document[];
     inviteToken?: string;
+    isAdmin: boolean;
 
     setNewInviteToken() {
         const sha1 = crypto.createHash('sha256');
@@ -49,6 +50,9 @@ export default class Team extends Model {
                 type: 'string',
                 maxLength: 10,
                 minLength: 10
+            },
+            isAdmin: {
+                type: 'boolean'
             }
         }
     };
