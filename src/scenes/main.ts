@@ -1,15 +1,11 @@
-import { BaseScene } from 'telegraf';
+import { BaseScene, ContextMessageUpdate } from 'telegraf';
 
-const scene = new BaseScene('main');
+const scene = new BaseScene<ContextMessageUpdate>('main');
 scene
     .enter((ctx) => {
         ctx.reply('main start');
     })
-    .leave((ctx) => {
-        ctx.reply('main end');
-    })
     .command('test', async (ctx) => {
-        await ctx.reply('tester command');
-        await ctx.scene.enter('help');
+        await ctx.reply('tester command ' + ctx.user?.fullName);
     });
 export default scene;
