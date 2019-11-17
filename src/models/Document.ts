@@ -3,19 +3,20 @@ import Team from './Team';
 
 export default class Document extends Model {
     documentId!: number;
-    ownerTeam!: Team;
+    team!: Team;
     milestone!: number;
     trelloAttachmentId!: string;
     gdriveFileId!: string;
+    teamId!: number;
 
     static tableName = 'documents';
     static idColumn = 'documentId';
 
     static jsonSchema = {
         type: 'object',
-        required: ['milestone', 'gdriveFileId', 'trelloAttachmentId', 'ownerTeam'],
+        required: ['milestone', 'gdriveFileId', 'trelloAttachmentId', 'teamId'],
         properties: {
-            ownerTeam: {
+            teamId: {
                 type: 'integer'
             },
             milestone: {
@@ -32,4 +33,19 @@ export default class Document extends Model {
             }
         }
     };
+
+    static get relationMappings() {
+        const Team = require('./Team').default;
+        return {
+            team: {
+                modelClass: Team,
+                relation: Model.BelongsToOneRelation,
+                join: {
+                    from: 'documents.teamId',
+                    to: 'teams.teamId'
+                }
+            }
+        };
+    }
+
 }
