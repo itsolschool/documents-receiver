@@ -47,5 +47,4 @@ export default class Document extends Model {
             }
         };
     }
-
 }

@@ -1,6 +1,7 @@
 import { Model } from 'objection';
 import crypto from 'crypto';
-import { User } from './User';
+import User from './User';
+import Document from './Document';
 
 export default class Team extends Model {
     capacity!: number;
@@ -9,6 +10,7 @@ export default class Team extends Model {
     trelloCardId?: string;
     gdriveFolderId?: string;
     members!: User[];
+    documents!: Document[];
     inviteToken?: string;
 
     setNewInviteToken() {
@@ -52,7 +54,8 @@ export default class Team extends Model {
     };
 
     static get relationMappings() {
-        const User = require('./User').User;
+        const User = require('./User').default;
+        const Document = require('./Document').default;
         return {
             members: {
                 modelClass: User,
@@ -60,6 +63,14 @@ export default class Team extends Model {
                 join: {
                     from: 'teams.teamId',
                     to: 'bot_users.teamId'
+                }
+            },
+            documents: {
+                modelClass: Document,
+                relation: Model.HasManyRelation,
+                join: {
+                    from: 'teams.teamId',
+                    to: 'documents.teamId'
                 }
             }
         };
