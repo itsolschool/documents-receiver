@@ -2,6 +2,8 @@ import * as tt from '../../node_modules/telegraf/typings/telegram-types.d';
 
 import { Extra, Middleware, SceneContext, SceneContextMessageUpdate } from 'telegraf';
 
+import User from '../models/User';
+
 declare module 'telegraf' {
     export class WizardContext {
         next();
@@ -14,7 +16,8 @@ declare module 'telegraf' {
     export class ContextMessageUpdate implements SceneContextMessageUpdate {
         // public dbchat: InstanceType<Chat>
 
-        wizard: WizardContext;
+        user: User | undefined;
+        // wizard: WizardContext;
         scene: SceneContext<this>;
         session: any;
 
