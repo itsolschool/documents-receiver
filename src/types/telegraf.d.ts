@@ -7,7 +7,6 @@ import { RedisClient } from 'redis';
 import TrelloService from '../services/TrelloService';
 
 declare module 'telegraf' {
-
     export class WizardContext {
         next();
 

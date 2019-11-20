@@ -1,7 +1,6 @@
 import { BaseScene, ContextMessageUpdate } from 'telegraf';
 import { __ } from '../helpers/strings';
-import { APP_ACCESS_TOKEN_KEY } from '../services/GDriveService';
-import AppVar from '../models/AppVar';
+import AppVar, { APP_ACCESS_TOKEN_KEY } from '../models/AppVar';
 
 const scene = new BaseScene<ContextMessageUpdate>('gdrive');
 scene

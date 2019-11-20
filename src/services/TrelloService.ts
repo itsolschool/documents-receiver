@@ -38,8 +38,7 @@ export default class TrelloService extends Trello {
         super({ useExistingEnvVar: true });
         process.env.trelloHelper = null;
 
-        if (auth)
-            this.setCredentials(auth);
+        if (auth) this.setCredentials(auth);
     }
 
     public setCredentials(auth: string) {
@@ -48,7 +47,6 @@ export default class TrelloService extends Trello {
         // @ts-ignore -- потому что очень и очень плохо лезть в private поля базовых классов, но нам надо
         this.trelloRequest = trelloRequest;
     }
-
 
     public static getBoardPrefix = () => '/1/boards/';
     public static getListPrefix = () => '/1/lists/';
