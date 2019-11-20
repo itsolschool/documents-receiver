@@ -1,5 +1,5 @@
 import Telegraf, { ContextMessageUpdate } from 'telegraf';
-import GDriveService, { APP_ACCESS_TOKEN_KEY, OAuthClientSettings } from '../service/GDrive';
+import GDriveService, { APP_ACCESS_TOKEN_KEY, OAuthClientSettings } from '../services/GDriveService';
 import AppVar from '../models/AppVar';
 
 export async function setupGDrive<T extends ContextMessageUpdate>(bot: Telegraf<T>, settings: OAuthClientSettings) {
