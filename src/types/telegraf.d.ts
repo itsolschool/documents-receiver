@@ -1,6 +1,6 @@
 import * as tt from '../../node_modules/telegraf/typings/telegram-types.d';
 import User from '../models/User';
-import GDriveService from '../service/GDrive';
+import GDriveService from '../services/GDriveService';
 import { Extra, Middleware, SceneContext, SceneContextMessageUpdate } from 'telegraf';
 import { RedisClient } from 'redis';
 
