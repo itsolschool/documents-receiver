@@ -31,18 +31,24 @@ interface AddListParams {
 export default class TrelloService extends Trello {
     // Строка авторизации состоит из 2 частей:
     //   <key>:<token>
-    constructor(auth: string) {
+    constructor(auth?: string) {
         // Нужно чтобы эта штука не создавала лишних файлов и переменных окружения.
         //  Поэтому говорим ей, чтобы она не рыпалась что-то где-то сохранять.
         process.env.trelloHelper = '{"appKey":null,"token":null}';
         super({ useExistingEnvVar: true });
         process.env.trelloHelper = null;
 
+        if (auth)
+            this.setCredentials(auth);
+    }
+
+    public setCredentials(auth: string) {
         const [key, token] = auth.split(':');
         const trelloRequest = new TrelloRequest({ key, token });
         // @ts-ignore -- потому что очень и очень плохо лезть в private поля базовых классов, но нам надо
         this.trelloRequest = trelloRequest;
     }
+
 
     public static getBoardPrefix = () => '/1/boards/';
     public static getListPrefix = () => '/1/lists/';

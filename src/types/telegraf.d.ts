@@ -4,7 +4,10 @@ import GDriveService from '../services/GDriveService';
 import { Extra, Middleware, SceneContext, SceneContextMessageUpdate } from 'telegraf';
 import { RedisClient } from 'redis';
 
+import TrelloService from '../services/TrelloService';
+
 declare module 'telegraf' {
+
     export class WizardContext {
         next();
 
@@ -22,6 +25,7 @@ declare module 'telegraf' {
         scene: SceneContext<this>;
         session: any;
         gdrive: GDriveService;
+        trello: TrelloService;
 
         replyWithMarkdown(markdown: string, extra?: tt.ExtraEditMessage | Extra): Promise<tt.Message>;
     }
