@@ -1,5 +1,5 @@
 import { BaseScene, ContextMessageUpdate, Stage } from 'telegraf';
-import checkUserAccess from '../helpers/checkUserAccess';
+import checkUserAccess from '../middlewares/checkUserAccess';
 
 const scene = new BaseScene<ContextMessageUpdate>('main');
 scene
