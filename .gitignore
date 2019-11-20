@@ -6,3 +6,4 @@ dist/
 ./drive-python.json
 ./drive-secret.json
 
+./config/gdrive_client_secret.json
