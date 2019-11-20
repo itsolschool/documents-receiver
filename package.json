@@ -24,7 +24,8 @@
     "pg": "^7.12.1",
     "string-template": "^1.0.0",
     "telegraf": "^3.33.3",
-    "telegraf-session-redis": "^5.1.0"
+    "telegraf-session-redis": "^5.1.0",
+    "trello-helper": "^3.0.6"
   },
   "scripts": {
     "lint": "prettier --write src/**/*.ts migrations/*.js"
