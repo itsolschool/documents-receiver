@@ -1,29 +1,39 @@
 import { BaseScene, ContextMessageUpdate } from 'telegraf';
 import { __ } from '../helpers/strings';
-import AppVar, { APP_ACCESS_TOKEN_KEY } from '../models/AppVar';
+import AppVar, { APP_GDRIVE_ACCESS_TOKEN } from '../models/AppVar';
+import { GDRIVE_SETUP_SCENE, MAIN_SCENE } from '../constant/scenes';
+import provideSingleton from '../ioc/provideSingletone';
+import { inject } from 'inversify';
+import { GDRIVE_SERVICE } from '../constant/services';
+import GDriveService from '../services/GDriveService';
 
-const scene = new BaseScene<ContextMessageUpdate>('gdrive');
-scene
-    .enter(async (ctx) => {
-        const authUrl = ctx.gdrive.getNewAuthUrl();
+@provideSingleton(GDRIVE_SETUP_SCENE)
+export class GDriveSetupScene extends BaseScene<ContextMessageUpdate> {
+    constructor(@inject(GDRIVE_SERVICE) gdrive: GDriveService) {
+        super(GDRIVE_SETUP_SCENE);
 
-        await ctx.reply(__('gdrive.askForToken', { link: authUrl }));
-    })
-    .on('text', async (ctx) => {
-        try {
-            const creds = await ctx.gdrive.getCredentialsByCode(ctx.message.text);
-            // @ts-ignore -- whilst there's no ts for -Async postfix :(
-            await AppVar.query().insert({
-                key: APP_ACCESS_TOKEN_KEY,
-                value: JSON.stringify(creds)
-            });
+        this.enter(async (ctx) => {
+            const authUrl = gdrive.getNewAuthUrl();
 
-            await ctx.scene.enter('main');
-        } catch (e) {
-            await ctx.reply(e);
-        }
-    })
-    .command('cancel', async (ctx) => {
-        await ctx.reply(__('gdrive.warn'));
-    });
-export default scene;
+            await ctx.reply(__('gdrive.askForToken', { link: authUrl }));
+        });
+
+        this.on('text', async (ctx) => {
+            try {
+                const creds = await gdrive.getCredentialsByCode(ctx.message.text);
+                // @ts-ignore -- whilst there's no ts for -Async postfix :(
+                await AppVar.query().insert({
+                    key: APP_GDRIVE_ACCESS_TOKEN,
+                    value: JSON.stringify(creds)
+                });
+
+                await ctx.scene.enter(MAIN_SCENE);
+            } catch (e) {
+                await ctx.reply(e);
+            }
+        });
+        this.command('cancel', async (ctx) => {
+            await ctx.reply(__('gdrive.warn'));
+        });
+    }
+}

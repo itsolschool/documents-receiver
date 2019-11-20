@@ -1,12 +1,11 @@
-import { ContextMessageUpdate, Middleware } from 'telegraf';
 import { __ } from '../helpers/strings';
+import { MAIN_SCENE } from '../constant/scenes';
 
-const middleware: Middleware<ContextMessageUpdate> = async (ctx, next) => {
+export async function checkIsUserAdmin(ctx, next) {
     if (ctx.user?.team.isAdmin) {
         return next();
     }
 
     await ctx.reply(__('system.accessDenied'));
-    await ctx.scene.leave();
-};
-export default middleware;
+    await ctx.scene.enter(MAIN_SCENE);
+}

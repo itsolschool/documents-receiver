@@ -12,10 +12,7 @@ export function setupRedisSession<T extends ContextMessageUpdate>(bot: Telegraf<
 
     const asyncRedis = bluebird.promisifyAll(rsession.client);
 
-    bot.use(rsession.middleware()).use((ctx, next) => {
-        ctx.redis = asyncRedis;
-        return next();
-    });
+    bot.use(rsession.middleware());
 
     return asyncRedis;
 }

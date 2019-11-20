@@ -6,10 +6,5 @@ export async function setupTrello<T extends ContextMessageUpdate>(bot: Telegraf<
     let token = await AppVar.query().findById(APP_TRELLO_TOKEN_KEY);
     const service = new TrelloService(token?.value);
 
-    bot.use((ctx, next) => {
-        ctx.trello = service;
-        return next();
-    });
-
     return service;
 }

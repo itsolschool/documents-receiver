@@ -1,0 +1,1 @@
+export const APP_VAR_PROVIDER = 'APP_VAR_PROVIDER';

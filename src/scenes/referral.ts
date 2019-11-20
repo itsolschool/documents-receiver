@@ -1,12 +1,23 @@
 import { __ } from '../helpers/strings';
-import { BaseScene } from 'telegraf';
+import { BaseScene, ContextMessageUpdate } from 'telegraf';
 import Team from '../models/Team';
 import User from '../models/User';
+import { REFERRAL } from '../constant/scenes';
+import provideSingleton from '../ioc/provideSingletone';
+import { inject } from 'inversify';
+import { DB_SERVICE } from '../constant/services';
 
-// @ts-ignore
-const scene = new BaseScene('referral');
-scene
-    .enter(async (ctx) => {
+@provideSingleton(REFERRAL)
+export class ReferralScene extends BaseScene<ContextMessageUpdate> {
+    constructor(@inject(DB_SERVICE) db) {
+        super(REFERRAL);
+
+        this.enter(this.userEnter);
+
+        this.on('text', this.handleUserText);
+    }
+
+    userEnter = async (ctx) => {
         let candidateTeam;
         if (ctx.user) {
             candidateTeam = await ctx.user.team.$query().eager('members');
@@ -30,8 +41,9 @@ scene
 
         ctx.session.candidateTeamId = candidateTeam.$id();
         await ctx.reply(__('referral.greeting', { username: ctx.from.username, team: candidateTeam.name }));
-    })
-    .on('text', async (ctx) => {
+    };
+
+    handleUserText = async (ctx) => {
         if (!ctx.message.text) {
             await ctx.reply(__('referral.doubt'));
             return;
@@ -71,5 +83,5 @@ scene
             })
         );
         return ctx.scene.enter('main');
-    });
-export default scene;
+    };
+}

@@ -1,6 +1,8 @@
 import { drive_v3, google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
+import provideSingleton from '../ioc/provideSingletone';
+import { GDRIVE_SERVICE } from '../constant/services';
 import Drive = drive_v3.Drive;
 
 export { Credentials };
@@ -18,12 +20,13 @@ export type OAuthClientSettings = {
     };
 };
 
+@provideSingleton(GDRIVE_SERVICE)
 export default class GDriveService {
     private authClient!: OAuth2Client;
 
     private drive!: Drive;
 
-    constructor(creds: OAuthClientSettings) {
+    setupAuth(creds: OAuthClientSettings) {
         const { client_secret, client_id, redirect_uris } = creds.installed;
         this.authClient = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0]);
 

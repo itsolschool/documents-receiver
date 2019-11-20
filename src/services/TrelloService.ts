@@ -1,6 +1,8 @@
 import { Trello } from 'trello-helper';
 import { TrelloRequest } from 'trello-helper/build/TrelloRequest';
 import { RestPromise } from 'trello-helper/build/Interfaces';
+import provideSingleton from '../ioc/provideSingletone';
+import { TRELLO_SERVICE } from '../constant/services';
 
 interface AddBoardParams {
     name: string;
@@ -28,6 +30,7 @@ interface AddListParams {
     pos?: 'top' | 'bottom' | number;
 }
 
+@provideSingleton(TRELLO_SERVICE)
 export default class TrelloService extends Trello {
     // Строка авторизации состоит из 2 частей:
     //   <key>:<token>
