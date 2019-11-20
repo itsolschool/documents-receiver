@@ -1,5 +1,5 @@
 import { ContextMessageUpdate, Middleware } from 'telegraf';
-import { __ } from './strings';
+import { __ } from '../helpers/strings';
 
 const middleware: Middleware<ContextMessageUpdate> = async (ctx, next) => {
     if (ctx.user?.team.isAdmin) {
