@@ -9,6 +9,7 @@ import { setupStage } from './helpers/stage';
 import { Stage } from 'telegraf';
 import { setupGDrive } from './helpers/gdrive';
 import * as fs from 'fs';
+import { setupTrello } from './helpers/trello';
 
 
 async function setupDb() {
@@ -28,6 +29,7 @@ async function setupBot() {
 
     setupRedisSession(bot, process.env.REDIS_URL);
     await setupGDrive(bot, JSON.parse(fs.readFileSync('client_secret.json', 'utf8')));
+    await setupTrello(bot);
 
     setupStage(bot);
 
