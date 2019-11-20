@@ -6,8 +6,6 @@ import Drive = drive_v3.Drive;
 export { Credentials };
 const SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.appdata'];
 
-export const APP_ACCESS_TOKEN_KEY = 'REDIS_ACCESS_TOKEN_KEY';
-
 export type OAuthClientSettings = {
     installed: {
         client_id: string;
