@@ -6,7 +6,6 @@ import Drive = drive_v3.Drive;
 export { Credentials };
 export const GDRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder';
 
-
 const SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.appdata'];
 
 export type OAuthClientSettings = {
@@ -20,7 +19,6 @@ export type OAuthClientSettings = {
         redirect_uris: string[];
     };
 };
-
 
 export default class GDriveService {
     private authClient!: OAuth2Client;

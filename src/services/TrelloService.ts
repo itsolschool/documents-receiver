@@ -28,7 +28,7 @@ interface AddListParams {
     pos?: 'top' | 'bottom' | number;
 }
 
-type ListFields = 'id' | 'name' | 'closed' | 'idBoard' | 'pos' | 'subscribed' | 'softLimit'
+type ListFields = 'id' | 'name' | 'closed' | 'idBoard' | 'pos' | 'subscribed' | 'softLimit';
 
 export default class TrelloService extends Trello {
     // Строка авторизации состоит из 2 частей:
@@ -67,7 +67,7 @@ export default class TrelloService extends Trello {
         });
     }
 
-    public async getList(listId: string, options ?: any): RestPromise {
+    public async getList(listId: string, options?: any): RestPromise {
         return this.get({
             path: TrelloService.getListPrefixWithId(listId),
             options

@@ -1,6 +1,6 @@
 import { BaseScene, ContextMessageUpdate } from 'telegraf';
 import { __ } from '../helpers/strings';
-import AppVar, { APP_ACCESS_TOKEN_KEY } from '../models/AppVar';
+import AppVar, { APP_GDRIVE_ACCESS_TOKEN_KEY } from '../models/AppVar';
 
 const scene = new BaseScene<ContextMessageUpdate>('gdrive');
 scene
@@ -14,7 +14,7 @@ scene
             const creds = await ctx.gdrive.getCredentialsByCode(ctx.message.text);
             // @ts-ignore -- whilst there's no ts for -Async postfix :(
             await AppVar.query().insert({
-                key: APP_ACCESS_TOKEN_KEY,
+                key: APP_GDRIVE_ACCESS_TOKEN_KEY,
                 value: JSON.stringify(creds)
             });
 
