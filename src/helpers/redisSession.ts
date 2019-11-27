@@ -2,7 +2,9 @@ import Telegraf, { ContextMessageUpdate } from 'telegraf';
 import TelegrafRedisSession from 'telegraf-session-redis';
 import bluebird from 'bluebird';
 
-export function setupRedisSession<T extends ContextMessageUpdate>(bot: Telegraf<T>, redisUrl: string) {
+const debug = require('debug')('bot:context:redis');
+
+export function bindRedisSession<T extends ContextMessageUpdate>(bot: Telegraf<T>, redisUrl: string) {
     const rsession = new TelegrafRedisSession({
         // @ts-ignore -- because redis doesn't require host and port if url is specified
         store: {
@@ -16,6 +18,8 @@ export function setupRedisSession<T extends ContextMessageUpdate>(bot: Telegraf<
         ctx.redis = asyncRedis;
         return next();
     });
+
+    debug('Redis started. Session attached to Context.');
 
     return asyncRedis;
 }
