@@ -28,6 +28,8 @@ interface AddListParams {
     pos?: 'top' | 'bottom' | number;
 }
 
+type ListFields = 'id' | 'name' | 'closed' | 'idBoard' | 'pos' | 'subscribed' | 'softLimit'
+
 export default class TrelloService extends Trello {
     // Строка авторизации состоит из 2 частей:
     //   <key>:<token>
@@ -48,11 +50,8 @@ export default class TrelloService extends Trello {
         this.trelloRequest = trelloRequest;
     }
 
-    public static getBoardPrefix = () => '/1/boards/';
-    public static getListPrefix = () => '/1/lists/';
-
     public async addBoard(params: AddBoardParams): RestPromise {
-        return this.post({ options: params, path: TrelloService.getBoardPrefix() });
+        return this.post({ options: params, path: TrelloService.getBoardPrefixWithId('') });
     }
 
     public async deleteBoard(idBoard: string): RestPromise {
@@ -64,7 +63,20 @@ export default class TrelloService extends Trello {
     public async addList(params: AddListParams): RestPromise {
         return this.post({
             options: params,
-            path: TrelloService.getListPrefix()
+            path: TrelloService.getListPrefixWithId('')
+        });
+    }
+
+    public async getList(listId: string, options ?: any): RestPromise {
+        return this.get({
+            path: TrelloService.getListPrefixWithId(listId),
+            options
+        });
+    }
+
+    public async getListField(listId: string, field?: ListFields): RestPromise {
+        return this.get({
+            path: TrelloService.getListPrefixWithId(listId) + '/' + field
         });
     }
 
@@ -79,7 +91,7 @@ export default class TrelloService extends Trello {
             name: 'BOT TEST <to delete>'
         });
 
-        const list = await this.addList({
+        await this.addList({
             idBoard: board.id,
             name: 'test'
         });

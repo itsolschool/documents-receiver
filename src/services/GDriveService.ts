@@ -4,6 +4,9 @@ import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import Drive = drive_v3.Drive;
 
 export { Credentials };
+export const GDRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder';
+
+
 const SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.appdata'];
 
 export type OAuthClientSettings = {
@@ -18,10 +21,11 @@ export type OAuthClientSettings = {
     };
 };
 
+
 export default class GDriveService {
     private authClient!: OAuth2Client;
 
-    private drive!: Drive;
+    public drive!: Drive;
 
     constructor(creds: OAuthClientSettings) {
         const { client_secret, client_id, redirect_uris } = creds.installed;
