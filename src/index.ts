@@ -16,8 +16,6 @@ const config = require(path.resolve(__dirname, '../config/general.json'));
 const debug = require('debug')('bot');
 
 async function setupDb() {
-
-
     const knex = Knex({
         ...require('../knexfile.js')[process.env.NODE_ENV || 'development']
     });
@@ -30,10 +28,11 @@ async function setupDb() {
 async function setupBot() {
     bot.catch(console.log);
 
-
     bot.use(attachUser);
 
-    const gdriveSecret = JSON.parse(fs.readFileSync(path.join(__dirname, '../config/gdrive_client_secret.json'), 'utf8'));
+    const gdriveSecret = JSON.parse(
+        fs.readFileSync(path.join(__dirname, '../config/gdrive_client_secret.json'), 'utf8')
+    );
 
     const redis = bindRedisSession(bot, process.env.REDIS_URL);
     const gdrive = await bindGDrive(bot, gdriveSecret);
@@ -43,13 +42,15 @@ async function setupBot() {
 
     bot.command('start', Stage.enter('referral'));
 
-
     // TODO переделать на webhook'и
     bot.startPolling();
     debug('Bot started');
 
     const boundServices = {
-        redis, gdrive, trello, config
+        redis,
+        gdrive,
+        trello,
+        config
     };
     return boundServices;
 }
