@@ -16,6 +16,8 @@ const config = require(path.resolve(__dirname, '../config/general.json'));
 const debug = require('debug')('bot');
 
 async function setupDb() {
+
+
     const knex = Knex({
         ...require('../knexfile.js')[process.env.NODE_ENV || 'development']
     });
@@ -44,28 +46,16 @@ async function setupBot() {
 
     // TODO переделать на webhook'и
     bot.startPolling();
-}
+    debug('Bot started');
 
-async function setupFirstTeam() {
-    let team = await Team.query().findById(1);
-
-    if (!team) {
-        console.log('No orgs team. Adding one...');
-
-        team = new Team();
-        team.setNewInviteToken();
-        team.schoolName = 'croc';
-        team.name = 'Администраторы';
-        team.isAdmin = true;
-
-        await Team.query().insert(team);
-    }
-
-    console.log(`Orgs team invite link: https://t.me/itss_docs_bot?start=${team.inviteToken}`);
+    const boundServices = {
+        redis, gdrive, trello, config
+    };
+    return boundServices;
 }
 
 Promise.resolve()
     .then(setupDb)
-    .then(setupFirstTeam)
     .then(setupBot)
+    .then(afterStart)
     .catch(console.error);
