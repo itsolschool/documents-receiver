@@ -2,6 +2,7 @@ import { drive_v3, google } from 'googleapis';
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client';
 import { Credentials } from 'google-auth-library/build/src/auth/credentials';
 import Drive = drive_v3.Drive;
+import Schema$File = drive_v3.Schema$File;
 
 export { Credentials };
 export const GDRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder';
@@ -71,5 +72,12 @@ export default class GDriveService {
         });
 
         return true;
+    }
+
+    async createFolder(name: string, parents?: string[]): Promise<Schema$File> {
+        const requestBody = { name, mimeType: GDRIVE_FOLDER_MIME, parents };
+
+        const { data } = await this.drive.files.create({ requestBody });
+        return data;
     }
 }

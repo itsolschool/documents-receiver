@@ -1,13 +1,13 @@
 import Telegraf, { ContextMessageUpdate } from 'telegraf';
 import GDriveService, { OAuthClientSettings } from '../services/GDriveService';
-import AppVar, { APP_GDRIVE_ACCESS_TOKEN_KEY } from '../models/AppVar';
+import AppVar, { APP_VAR_KEYS } from '../models/AppVar';
 
 const debug = require('debug')('bot:context:gdrive');
 
 export async function bindGDrive<T extends ContextMessageUpdate>(bot: Telegraf<T>, settings: OAuthClientSettings) {
     const gdrive = new GDriveService(settings);
 
-    let token = await AppVar.query().findById(APP_GDRIVE_ACCESS_TOKEN_KEY);
+    let token = await AppVar.query().findById(APP_VAR_KEYS.GDRIVE_ACCESS_TOKEN);
     if (token) {
         debug('Use saved GDrive access token.');
         gdrive.setCredentials(JSON.parse(token.value));

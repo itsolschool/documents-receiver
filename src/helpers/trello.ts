@@ -1,11 +1,11 @@
 import TrelloService from '../services/TrelloService';
 import Telegraf, { ContextMessageUpdate } from 'telegraf';
-import AppVar, { APP_TRELLO_TOKEN_KEY } from '../models/AppVar';
+import AppVar, { APP_VAR_KEYS } from '../models/AppVar';
 
 const debug = require('debug')('bot:context:trello');
 
 export async function bindTrello<T extends ContextMessageUpdate>(bot: Telegraf<T>) {
-    let tokenVar = await AppVar.query().findById(APP_TRELLO_TOKEN_KEY);
+    let tokenVar = await AppVar.query().findById(APP_VAR_KEYS.TRELLO_TOKEN);
     const token = tokenVar?.value;
 
     if (token) {
