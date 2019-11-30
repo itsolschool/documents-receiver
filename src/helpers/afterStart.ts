@@ -1,5 +1,5 @@
 import Team from '../models/Team';
-import AppVar, { APP_GDRIVE_BASE_DIR_ID, APP_TRELLO_BASE_LIST_ID } from '../models/AppVar';
+import AppVar, { APP_VAR_KEYS } from '../models/AppVar';
 import GDriveService, { GDRIVE_FOLDER_MIME } from '../services/GDriveService';
 import TrelloService from '../services/TrelloService';
 import { __ } from './strings';
@@ -60,29 +60,24 @@ async function setupGeneralFolder({ gdrive, config }: ServicesAndConfig) {
     log('No root folder found. Creating new one...');
     // TODO может стоит сделать генерацию названия по текущей дате?..
     const name = config.gdrive.rootDirName as string;
-    const requestBody = { name, mimeType: GDRIVE_FOLDER_MIME };
-    // const media = {  };
-
-    const { data } = await gdrive.drive.files.create({ requestBody });
+    const folder = await gdrive.createFolder(name);
 
     await transaction(AppVar.knex(), async (tx) => {
-        await AppVar.query(tx).deleteById(APP_GDRIVE_BASE_DIR_ID);
+        await AppVar.query(tx).deleteById(APP_VAR_KEYS.GDRIVE_ROOT_FOLDER);
 
         await AppVar.query(tx).insert({
-            key: APP_GDRIVE_BASE_DIR_ID,
-            value: data.id
+            key: APP_VAR_KEYS.GDRIVE_ROOT_FOLDER,
+            value: folder.id
         });
     });
 
-    log('GDrive folder setup: %j', data);
+    log('GDrive folder setup: %j', folder);
 
     return true;
 }
 
 async function hasRootFolderFound({ gdrive }: Partial<ServicesAndConfig>): Promise<boolean> {
-    const folderIdOrNull = await AppVar.query()
-        .where('key', APP_GDRIVE_BASE_DIR_ID)
-        .first();
+    const folderIdOrNull = await AppVar.query().findById(APP_VAR_KEYS.GDRIVE_ROOT_FOLDER);
 
     try {
         const { data } = await gdrive.drive.files.get({ fileId: folderIdOrNull?.value });
@@ -115,10 +110,10 @@ async function setupTrelloSpawnList({ trello, config }: ServicesAndConfig) {
     });
 
     await transaction(AppVar.knex(), async (tx) => {
-        await AppVar.query(tx).deleteById(APP_TRELLO_BASE_LIST_ID);
+        await AppVar.query(tx).deleteById(APP_VAR_KEYS.TRELLO_SPAWN_LIST_ID);
 
         await AppVar.query(tx).insert({
-            key: APP_TRELLO_BASE_LIST_ID,
+            key: APP_VAR_KEYS.TRELLO_SPAWN_LIST_ID,
             value: list.id
         });
     });
@@ -137,9 +132,7 @@ async function setupTrelloSpawnList({ trello, config }: ServicesAndConfig) {
 }
 
 async function hasSpawnList({ trello }: Partial<ServicesAndConfig>): Promise<boolean> {
-    const listIdOrNull = await AppVar.query()
-        .where('key', APP_TRELLO_BASE_LIST_ID)
-        .first();
+    const listIdOrNull = await AppVar.query().findById(APP_VAR_KEYS.TRELLO_SPAWN_LIST_ID);
     try {
         await trello.getList(listIdOrNull?.value);
         return true;

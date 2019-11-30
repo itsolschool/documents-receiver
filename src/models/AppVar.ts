@@ -17,9 +17,9 @@ export default class AppVar extends Model {
     };
 }
 
-export const APP_TRELLO_TOKEN_KEY = 'TRELLO_TOKEN_KEY';
-export const APP_TRELLO_BASE_BOARD_ID = 'TRELLO_BASE_BOARD_ID';
-export const APP_TRELLO_BASE_LIST_ID = 'TRELLO_BASE_LIST_ID';
-
-export const APP_GDRIVE_ACCESS_TOKEN_KEY = 'GDRIVE_ACCESS_TOKEN_KEY';
-export const APP_GDRIVE_BASE_DIR_ID = 'GDRIVE_BASE_DIR_ID';
+export enum APP_VAR_KEYS {
+    TRELLO_TOKEN = 'TRELLO/token',
+    TRELLO_SPAWN_LIST_ID = 'TRELLO/spawnListId',
+    GDRIVE_ACCESS_TOKEN = 'GDRIVE/accessToken',
+    GDRIVE_ROOT_FOLDER = 'GDRIVE/rootFolder'
+}
