@@ -4,25 +4,19 @@ import GDriveService from '../services/GDriveService';
 import { Extra, Middleware, SceneContext, SceneContextMessageUpdate } from 'telegraf';
 import { RedisClient } from 'redis';
 
+import WizardContext from '../helpers/wizard/context';
+
 import TrelloService from '../services/TrelloService';
 
 declare module 'telegraf' {
-    export class WizardContext {
-        next();
-
-        back();
-
-        selectStep(index: number): WizardContext;
-    }
-
     export class ContextMessageUpdate implements SceneContextMessageUpdate {
         // public dbchat: InstanceType<Chat>
 
         redis: RedisClient;
         user: User | undefined;
-        // wizard: WizardContext;
+        wizard: WizardContext<this>;
         scene: SceneContext<this>;
-        session: any;
+        session: any; // вот тут творится полная анархия. одни классы пишут, другие пытаются использовать...
         gdrive: GDriveService;
         trello: TrelloService;
 
