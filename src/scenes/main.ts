@@ -1,5 +1,7 @@
 import { BaseScene, ContextMessageUpdate, Stage } from 'telegraf';
-import checkUserAccess from '../middlewares/checkUserAccess';
+import checkUserIsAdmin from '../middlewares/checkUserIsAdmin';
+import { GREEN_MARK, RED_CROSS, WHITE_QUESTION_MARK } from '../const/emojies';
+import { SCENE } from '../const/sceneId';
 
 const scene = new BaseScene<ContextMessageUpdate>('main');
 scene
@@ -9,14 +11,25 @@ scene
     .command('test', async (ctx) => {
         await ctx.reply('tester command ' + ctx.user?.fullName);
     })
-    .command('gdrive', checkUserAccess, Stage.enter('gdrive'))
+    .command('gdrive', checkUserIsAdmin, Stage.enter(SCENE.GDRIVE_SETUP))
+    .command('addTeam', checkUserIsAdmin, Stage.enter(SCENE.TEAM_ADD))
     .command('check', async (ctx) => {
-        const message = await ctx.reply('🔄 GDrive checking...');
+        const message = await ctx.reply(`${WHITE_QUESTION_MARK} GDrive checking...`);
         try {
             await ctx.gdrive.checkOperational();
-            await ctx.telegram.editMessageText(ctx.chat.id, message.message_id, undefined, '✅ GDrive operational');
+            await ctx.telegram.editMessageText(
+                ctx.chat.id,
+                message.message_id,
+                undefined,
+                `${GREEN_MARK} GDrive operational`
+            );
         } catch (e) {
-            await ctx.telegram.editMessageText(ctx.chat.id, message.message_id, undefined, `❌ GDrive FAILED\n${e}`);
+            await ctx.telegram.editMessageText(
+                ctx.chat.id,
+                message.message_id,
+                undefined,
+                `${RED_CROSS} GDrive FAILED\n${e}`
+            );
         }
     });
 export default scene;
