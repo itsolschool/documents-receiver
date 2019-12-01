@@ -9,8 +9,6 @@ import { GREEN_MARK, RED_CROSS, WHITE_QUESTION_MARK } from '../const/emojies';
 import promiseListener from '../helpers/promiseListener';
 import { SCENE } from '../const/sceneId';
 
-function f() {}
-
 function onlyText(cb: Middleware<ContextMessageUpdate>): Middleware<ContextMessageUpdate> {
     return (ctx, next) => {
         if (ctx.message.text?.length > 1 && !ctx.message.text.startsWith('/')) {
