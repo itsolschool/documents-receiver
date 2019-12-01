@@ -3,7 +3,8 @@ import { BaseScene } from 'telegraf';
 import Team from '../models/Team';
 import User from '../models/User';
 
-// @ts-ignore
+const CANDIDATE_TEAM_ID = 'candidateTeamId';
+
 const scene = new BaseScene('referral');
 scene
     .enter(async (ctx) => {
@@ -28,7 +29,7 @@ scene
             return;
         }
 
-        ctx.session.candidateTeamId = candidateTeam.$id();
+        ctx.scene.state[CANDIDATE_TEAM_ID] = candidateTeam.$id();
         await ctx.reply(__('referral.greeting', { username: ctx.from.username, team: candidateTeam.name }));
     })
     .on('text', async (ctx) => {
@@ -53,7 +54,7 @@ scene
                 .insert({
                     tgId: ctx.from.id,
                     fullName: ctx.message.text,
-                    teamId: ctx.session.candidateTeamId
+                    teamId: ctx.scene.state[CANDIDATE_TEAM_ID]
                 })
                 .eager('team');
         } else {
