@@ -1,8 +1,13 @@
 import lodash from 'lodash';
 import format from 'string-template';
 
-export function __(key: string, data?: any) {
+export function __(key: string, data?: { [key: string]: string }) {
     const source = lodash.get(strings, key, '');
+
+    if (key.endsWith('__html')) {
+        data = lodash.mapValues(data, (val) => lodash.escape(val));
+    }
+
     return format(source, data);
 }
 
@@ -59,5 +64,19 @@ export const strings = {
 Если будут баги - связывайтесь с разработчиком. Сейчас это @BANOnotIT.
 `
         }
+    },
+    addTeam: {
+        askName: `Введите название команды`,
+        nameNotUniq: `Простите, команда с таким названием уже есть... Попробуйте другое название`,
+        askSchool: `Введите школу`,
+        confirm__html: 'Команда <b>{name}</b>\nШкола <b>{school}</b>\n\nВсё правильно? (нажмите кнопку)',
+        confirmYes: 'Да',
+        confirmNo: 'Нет. Поправить',
+        retry: 'Хорошо, попробуем ещё раз!',
+        result: '{trello} Trello\n{gdrive} GDrive\n\n{errors}',
+        link: `Ссылка для команды:\n{link}`
+    },
+    errors: {
+        notText: `К сожалению я не понимаю. Введите значение текстом`
     }
 };
