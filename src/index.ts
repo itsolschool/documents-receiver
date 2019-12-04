@@ -5,14 +5,15 @@ import attachUser from './middlewares/attachUser'
 import { bot } from './helpers/bot'
 import { bindRedisSession } from './helpers/redisSession'
 import { setupStage } from './helpers/stage'
-import { Stage } from 'telegraf'
+import { BotConfig, Stage } from 'telegraf'
 import { bindGDrive } from './helpers/gdrive'
 import * as fs from 'fs'
 import { bindTrello } from './helpers/trello'
 import * as path from 'path'
 import afterStart from './helpers/afterStart'
+import bindConfig from './helpers/bindConfig'
 
-const config = require(path.resolve(__dirname, '../config/general.json'))
+const config: BotConfig = require(path.resolve(__dirname, '../config/general.json'))
 const debug = require('debug')('bot')
 
 async function setupDb() {
@@ -33,6 +34,8 @@ async function setupBot() {
     const gdriveSecret = JSON.parse(
         fs.readFileSync(path.join(__dirname, '../config/gdrive_client_secret.json'), 'utf8')
     )
+
+    bindConfig(bot, config)
 
     const redis = bindRedisSession(bot, process.env.REDIS_URL)
     const gdrive = await bindGDrive(bot, gdriveSecret)
