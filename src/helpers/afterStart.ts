@@ -4,20 +4,14 @@ import GDriveService, { GDRIVE_FOLDER_MIME } from '../services/GDriveService'
 import TrelloService from '../services/TrelloService'
 import { __ } from './strings'
 import { transaction } from 'objection'
+import { BotConfig } from 'telegraf'
 
 const debug = require('debug')('bot:after')
 
 interface ServicesAndConfig {
     gdrive: GDriveService
     trello: TrelloService
-    config: {
-        trello: {
-            boardId: string
-        }
-        gdrive: {
-            rootDirName: string
-        }
-    }
+    config: BotConfig
 }
 
 export default async (args: ServicesAndConfig) =>

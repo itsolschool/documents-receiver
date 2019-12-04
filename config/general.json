@@ -4,5 +4,20 @@
   },
   "trello": {
     "boardId": "582d93b55dfb539666a06f50"
-  }
+  },
+  "documentStages": [
+    "Заявка на участие",
+    "Подготовка к мастерской",
+    "Концепция",
+    "Паспорт проекта",
+    "Пользовательское тестирование",
+    "Описание проекта к предзащите",
+    "Финальная презентация"
+  ],
+  "allowedMIMEs": [
+    "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    "application/vnd.google-apps.presentation",
+    "application/vnd.google-apps.document"
+  ]
 }

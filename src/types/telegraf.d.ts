@@ -9,8 +9,20 @@ import WizardContext from '../helpers/wizard/context'
 import TrelloService from '../services/TrelloService'
 
 declare module 'telegraf' {
+    export type BotConfig = {
+        gdrive: {
+            rootDirName: string
+        }
+        trello: {
+            boardId: string
+        }
+        documentStages: string[],
+        allowedMIMEs: string[]
+    }
+
     export class ContextMessageUpdate implements SceneContextMessageUpdate {
         redis: RedisClient
+        config: BotConfig
         user: User | undefined
         wizard: WizardContext<this>
         scene: SceneContext<this>
