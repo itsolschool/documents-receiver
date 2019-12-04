@@ -1,19 +1,19 @@
-import lodash from 'lodash';
-import format from 'string-template';
+import lodash from 'lodash'
+import format from 'string-template'
 
 export function __(key: string, data?: { [key: string]: string }) {
-    const source = lodash.get(strings, key, '');
+    const source = lodash.get(strings, key, '')
 
     if (key.endsWith('__html')) {
-        data = lodash.mapValues(data, (val) => lodash.escape(val));
+        data = lodash.mapValues(data, (val) => lodash.escape(val))
     }
 
-    return format(source, data);
+    return format(source, data)
 }
 
 export const strings = {
     system: {
-        accessDenied: `Я не знаю такую команду...`
+        accessDenied: 'Я не знаю такую команду...'
     },
     referral: {
         wrongToken: `Привет!
@@ -30,7 +30,7 @@ export const strings = {
 Теперь ты в команде {team}!`,
         doubt: `
 Прости, я сомневаюсь, что тебя так зовут. Попробуй ещё раз.`,
-        restricted: `Ю шел нот пас!.. пока не скажешь как тебя звоут`
+        restricted: 'Ю шел нот пас!.. пока не скажешь как тебя звоут'
     },
     main: {
         enter: `
@@ -47,7 +47,7 @@ export const strings = {
         warn: `
 Прошлый токен уже не действителен. Бот не будет иметь доступа к Google Диску.
 Но вы можете попробовать процедуру заново.`,
-        ok: `Google Диск подключен!`
+        ok: 'Google Диск подключен!'
     },
     init: {
         trello: {
@@ -66,17 +66,17 @@ export const strings = {
         }
     },
     addTeam: {
-        askName: `Введите название команды`,
-        nameNotUniq: `Простите, команда с таким названием уже есть... Попробуйте другое название`,
-        askSchool: `Введите школу`,
+        askName: 'Введите название команды',
+        nameNotUniq: 'Простите, команда с таким названием уже есть... Попробуйте другое название',
+        askSchool: 'Введите школу',
         confirm__html: 'Команда <b>{name}</b>\nШкола <b>{school}</b>\n\nВсё правильно? (нажмите кнопку)',
         confirmYes: 'Да',
         confirmNo: 'Нет. Поправить',
         retry: 'Хорошо, попробуем ещё раз!',
         result: '{trello} Trello\n{gdrive} GDrive\n\n{errors}',
-        link: `Ссылка для команды:\n{link}`
+        link: 'Ссылка для команды:\n{link}'
     },
     errors: {
-        notText: `К сожалению я не понимаю. Введите значение текстом`
+        notText: 'К сожалению я не понимаю. Введите значение текстом'
     }
-};
+}
