@@ -1,8 +1,8 @@
-import Telegraf, { ContextMessageUpdate, session } from 'telegraf';
-import TelegrafRedisSession from 'telegraf-session-redis';
-import bluebird from 'bluebird';
+import Telegraf, { ContextMessageUpdate, session } from 'telegraf'
+import TelegrafRedisSession from 'telegraf-session-redis'
+import bluebird from 'bluebird'
 
-const debug = require('debug')('bot:context:redis');
+const debug = require('debug')('bot:context:redis')
 
 export function bindRedisSession<T extends ContextMessageUpdate>(bot: Telegraf<T>, redisUrl: string) {
     const rsession = new TelegrafRedisSession({
@@ -10,18 +10,18 @@ export function bindRedisSession<T extends ContextMessageUpdate>(bot: Telegraf<T
         store: {
             url: redisUrl
         }
-    });
+    })
 
-    const asyncRedis = bluebird.promisifyAll(rsession.client);
+    const asyncRedis = bluebird.promisifyAll(rsession.client)
 
-    if (process.env.NODE_ENV === 'development') bot.use(session());
+    if (process.env.NODE_ENV === 'development') bot.use(session())
     else
         bot.use(rsession.middleware()).use((ctx, next) => {
-            ctx.redis = asyncRedis;
-            return next();
-        });
+            ctx.redis = asyncRedis
+            return next()
+        })
 
-    debug('Redis started. Session attached to Context.');
+    debug('Redis started. Session attached to Context.')
 
-    return asyncRedis;
+    return asyncRedis
 }

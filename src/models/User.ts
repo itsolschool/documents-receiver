@@ -1,14 +1,14 @@
-import { Model } from 'objection';
-import Team from './Team';
+import { Model } from 'objection'
+import Team from './Team'
 
 export default class User extends Model {
-    tgId!: number;
-    fullName!: string;
-    teamId!: number;
-    team!: Team;
+    tgId!: number
+    fullName!: string
+    teamId!: number
+    team!: Team
 
-    static tableName = 'bot_users';
-    static idColumn = 'tgId';
+    static tableName = 'bot_users'
+    static idColumn = 'tgId'
 
     static jsonSchema = {
         type: 'object',
@@ -18,7 +18,7 @@ export default class User extends Model {
             fullName: { type: 'string' },
             teamId: { type: 'integer' }
         }
-    };
+    }
 
     static relationMappings = {
         team: {
@@ -29,5 +29,5 @@ export default class User extends Model {
                 to: 'teams.teamId'
             }
         }
-    };
+    }
 }

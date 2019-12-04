@@ -1,11 +1,11 @@
-import { Model } from 'objection';
+import { Model } from 'objection'
 
 export default class AppVar extends Model {
-    static tableName = 'app_vars';
-    static idColumn = 'key';
+    static tableName = 'app_vars'
+    static idColumn = 'key'
 
-    key!: string;
-    value!: string;
+    key!: string
+    value!: string
 
     static jsonSchema = {
         type: 'object',
@@ -14,7 +14,7 @@ export default class AppVar extends Model {
             key: { type: 'string' },
             value: { type: 'string' }
         }
-    };
+    }
 }
 
 export enum APP_VAR_KEYS {

@@ -1,16 +1,16 @@
-import { Model } from 'objection';
-import Team from './Team';
+import { Model } from 'objection'
+import Team from './Team'
 
 export default class Document extends Model {
-    documentId!: number;
-    team!: Team;
-    milestone!: number;
-    trelloAttachmentId!: string;
-    gdriveFileId!: string;
-    teamId!: number;
+    documentId!: number
+    team!: Team
+    milestone!: number
+    trelloAttachmentId!: string
+    gdriveFileId!: string
+    teamId!: number
 
-    static tableName = 'documents';
-    static idColumn = 'documentId';
+    static tableName = 'documents'
+    static idColumn = 'documentId'
 
     static jsonSchema = {
         type: 'object',
@@ -32,10 +32,10 @@ export default class Document extends Model {
                 type: 'date'
             }
         }
-    };
+    }
 
     static get relationMappings() {
-        const Team = require('./Team').default;
+        const Team = require('./Team').default
         return {
             team: {
                 modelClass: Team,
@@ -45,6 +45,6 @@ export default class Document extends Model {
                     to: 'teams.teamId'
                 }
             }
-        };
+        }
     }
 }
