@@ -21,10 +21,12 @@
     "lodash": "^4.17.15",
     "objection": "^1.6.11",
     "pg": "^7.12.1",
+    "request": "^2.88.0",
     "string-template": "^1.0.0",
     "telegraf": "^3.33.3",
     "telegraf-session-redis": "^5.1.0",
-    "trello-helper": "^3.0.6"
+    "trello-helper": "^3.0.6",
+    "url-regex": "^5.0.0"
   },
   "scripts": {
     "lint": "prettier --write src/**/*.ts migrations/*.js"
