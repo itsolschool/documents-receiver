@@ -11,6 +11,7 @@ scene
     .command('test', async (ctx) => {
         await ctx.reply('tester command ' + ctx.user?.fullName)
     })
+    .command('upload', Stage.enter(SCENE.UPLOAD_DOCUMENT))
     .command('gdrive', checkUserIsAdmin, Stage.enter(SCENE.GDRIVE_SETUP))
     .command('addTeam', checkUserIsAdmin, Stage.enter(SCENE.TEAM_ADD))
     .command('check', async (ctx) => {
