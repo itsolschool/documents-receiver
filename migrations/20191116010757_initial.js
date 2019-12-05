@@ -29,7 +29,7 @@ exports.up = function(knex) {
                 .notNullable()
                 .comment('Номер периода, к которому относится этот документ')
             t.string('gdriveFileId').notNullable()
-            t.string('trelloAttachmentId').notNullable()
+            t.string('trelloAttachmentId')
             t.dateTime('attachedTime', { useTz: true })
                 .defaultTo(knex.fn.now())
                 .comment('Время загрузки документа')

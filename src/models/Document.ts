@@ -5,7 +5,7 @@ export default class Document extends Model {
     documentId!: number
     team!: Team
     milestone!: number
-    trelloAttachmentId!: string
+    trelloAttachmentId?: string
     gdriveFileId!: string
     teamId!: number
 
@@ -14,7 +14,7 @@ export default class Document extends Model {
 
     static jsonSchema = {
         type: 'object',
-        required: ['milestone', 'gdriveFileId', 'trelloAttachmentId', 'teamId'],
+        required: ['milestone', 'gdriveFileId', 'teamId'],
         properties: {
             teamId: {
                 type: 'integer'
