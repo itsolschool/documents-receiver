@@ -22,12 +22,12 @@ export class WizardScene extends BaseScene<ContextMessageUpdate> {
         this.leaveHandler = compose(this.options.leaveHandlers)
     }
 
-    set ttl(value) {
-        this.options.ttl = value
-    }
-
     get ttl() {
         return this.options.ttl
+    }
+
+    set ttl(value) {
+        this.options.ttl = value
     }
 
     leave = (...fns) => {
