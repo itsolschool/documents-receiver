@@ -5,7 +5,7 @@
   "trello": {
     "boardId": "582d93b55dfb539666a06f50"
   },
-  "documentStages": [
+  "milestones": [
     "Заявка на участие",
     "Подготовка к мастерской",
     "Концепция",
@@ -19,5 +19,6 @@
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     "application/vnd.google-apps.presentation",
     "application/vnd.google-apps.document"
-  ]
+  ],
+  "fileMask": "{milestoneNum}. {milestoneTitle} v{versionNumber}"
 }

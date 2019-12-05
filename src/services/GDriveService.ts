@@ -7,7 +7,11 @@ import Schema$File = drive_v3.Schema$File
 export { Credentials }
 export const GDRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder'
 
-const SCOPES = ['https://www.googleapis.com/auth/drive.file', 'https://www.googleapis.com/auth/drive.appdata']
+const SCOPES = [
+    'https://www.googleapis.com/auth/drive',
+    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive.appdata'
+]
 
 export type OAuthClientSettings = {
     installed: {
@@ -22,9 +26,8 @@ export type OAuthClientSettings = {
 }
 
 export default class GDriveService {
-    private authClient!: OAuth2Client
-
-    public drive!: Drive
+    public readonly drive!: Drive
+    private readonly authClient!: OAuth2Client
 
     constructor(creds: OAuthClientSettings) {
         const { client_secret, client_id, redirect_uris } = creds.installed
@@ -65,8 +68,8 @@ export default class GDriveService {
             media,
             fields: 'id'
         })
-        console.log(response)
 
+        await this.drive.files.get({ fileId: response.data.id })
         await this.drive.files.delete({
             fileId: response.data.id
         })
