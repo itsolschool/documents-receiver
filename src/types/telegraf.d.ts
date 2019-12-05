@@ -16,8 +16,9 @@ declare module 'telegraf' {
         trello: {
             boardId: string
         }
-        documentStages: string[],
+        milestones: string[]
         allowedMIMEs: string[]
+        fileMask: string
     }
 
     export class ContextMessageUpdate implements SceneContextMessageUpdate {

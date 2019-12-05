@@ -1,5 +1,6 @@
 import lodash from 'lodash'
 import format from 'string-template'
+import { GREEN_MARK, RED_CROSS, WHITE_QUESTION_MARK } from '../const/emojies'
 
 export function __(key: string, data?: { [key: string]: string }) {
     const source = lodash.get(strings, key, '')
@@ -71,12 +72,25 @@ export const strings = {
         askSchool: 'Введите школу',
         confirm__html: 'Команда <b>{name}</b>\nШкола <b>{school}</b>\n\nВсё правильно? (нажмите кнопку)',
         confirmYes: 'Да',
-        confirmNo: 'Нет. Поправить',
+        confirmNo: 'Нет. Хочу поправить',
         retry: 'Хорошо, попробуем ещё раз!',
         result: '{trello} Trello\n{gdrive} GDrive\n\n{errors}',
         link: 'Ссылка для команды:\n{link}'
     },
+    uploadDocument: {
+        askMilestone: `Какой файл ты хочешь загрузить?`,
+        milestoneChosen__html: `Ну хорошо. Значит загружаем <code>{milestone}</code>`,
+        askDocument: `Теперь нужна ссылка на Google Документ или файл на Google Диске.
+Принимаются только презентации, офисные документы и PDF файлы`,
+        incorrectLink: `Я не смог получить файл по этой ссылке. Может это вообще не ссылка?..
+В любом случае проверь правильная ли ссылка и является ли она публичной`,
+        wrongFileType: `Я не могу загружать файлы в этом формате. Я могу только PDF, документы и презентации. Переведи в другой формат и попробуй ещё разок`,
+        uploadProgress: `${WHITE_QUESTION_MARK} Загружаю документ...`,
+        errorUploading: `${RED_CROSS} К сожалению произошла ошибка.
+Попробуй загрузить документ попозже`,
+        successUploading__html: `${GREEN_MARK} Я загрузил: <code>{filename}</code>`
+    },
     errors: {
-        notText: 'К сожалению я не понимаю. Введите значение текстом'
+        notText: 'К сожалению, я не понимаю. Введите значение текстом'
     }
 }
