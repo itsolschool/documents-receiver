@@ -3,12 +3,8 @@ export default async function<T>(cb: (ar: T[]) => any | Promise<any>, promises: 
 
     let busy: Promise<any> | boolean = false
 
-    function notify(force = false) {
-        if (force)
-            Promise.resolve(busy)
-                .then(() => (busy = cb(result)))
-                .then(() => (busy = false))
-        else if (!busy) {
+    function notify() {
+        if (!busy) {
             busy = Promise.resolve(cb(result)).then(() => (busy = false))
         }
     }
@@ -18,10 +14,7 @@ export default async function<T>(cb: (ar: T[]) => any | Promise<any>, promises: 
         p.then(binded, binded).then(() => notify())
     })
 
-    // notify();
     await Promise.all(promises)
-    notify(true)
-
     return result
 }
 
