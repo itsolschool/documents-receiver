@@ -5,13 +5,14 @@ import attachUser from './middlewares/attachUser'
 import { bot } from './helpers/bot'
 import { bindRedisSession } from './helpers/redisSession'
 import { setupStage } from './helpers/stage'
-import { BotConfig, Stage } from 'telegraf'
+import { BotConfig } from 'telegraf'
 import { bindGDrive } from './helpers/gdrive'
 import * as fs from 'fs'
 import { bindTrello } from './helpers/trello'
 import * as path from 'path'
 import afterStart from './helpers/afterStart'
 import bindConfig from './helpers/bindConfig'
+import { setupReferralMiddleware } from './middlewares/referralMiddleware'
 
 const config: BotConfig = require(path.resolve(__dirname, '../config/general.json'))
 const debug = require('debug')('bot')
@@ -37,13 +38,14 @@ async function setupBot() {
 
     bindConfig(bot, config)
 
+
     const redis = bindRedisSession(bot, process.env.REDIS_URL)
     const gdrive = await bindGDrive(bot, gdriveSecret)
     const trello = await bindTrello(bot)
 
+    setupReferralMiddleware(bot)
     setupStage(bot)
 
-    bot.command('start', Stage.enter('referral'))
 
     bot.catch((error) => error)
 
