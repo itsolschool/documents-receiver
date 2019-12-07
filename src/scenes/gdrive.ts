@@ -1,10 +1,11 @@
-import { BaseScene, ContextMessageUpdate, Extra } from 'telegraf'
+import { ContextMessageUpdate, Extra } from 'telegraf'
 import { __ } from '../helpers/strings'
 import AppVar, { APP_VAR_KEYS } from '../models/AppVar'
 import { SCENE } from '../const/sceneId'
 import { ExtraReplyMessage } from 'telegraf/typings/telegram-types'
+import { CancelableScene } from '../helpers/CancelableScene'
 
-const scene = new BaseScene<ContextMessageUpdate>(SCENE.GDRIVE_SETUP)
+const scene = new CancelableScene<ContextMessageUpdate>(SCENE.GDRIVE_SETUP)
 scene
     .enter(async (ctx) => {
         const authUrl = ctx.gdrive.getNewAuthUrl()

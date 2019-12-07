@@ -32,7 +32,7 @@ const confirmStep = new Composer()
 
 const scene = new WizardScene(
     SCENE.TEAM_ADD,
-    {},
+    { cancelable: true },
     onlyText(async (ctx, next) => {
         ctx.wizard.state['teamName'] = ctx.message.text
         if (
@@ -139,9 +139,7 @@ async function sendInviteLink(ctx: ContextMessageUpdate, team: Team) {
         .findById(team.$id())
         .patch({ inviteToken: team.inviteToken })
 
-    const bot = await ctx.telegram.getMe()
-
-    const link = `https://t.me/${bot.username}?start=${team.inviteToken}`
+    const link = `https://t.me/${ctx.me}?start=${team.inviteToken}`
     await ctx.reply(__('addTeam.link', { link }))
 }
 

@@ -147,11 +147,11 @@ const fileGetter = /*new Composer().use(*/ async (ctx, next) => {
 // TODO реализовать загрузку файлов
 // .on('document',()=>void )
 
-const scene = new WizardScene(SCENE.UPLOAD_DOCUMENT, {}, milestoneSelector, fileGetter)
+const scene = new WizardScene(SCENE.UPLOAD_DOCUMENT, { cancelable: true }, milestoneSelector, fileGetter)
 
 scene.enter((ctx) => {
     const buttons = ctx.config.milestones.map((title, i) => [Markup.callbackButton(title, `selMile${i}`)])
-    ctx.reply(
+    return ctx.reply(
         __('uploadDocument.askMilestone'),
         Markup.inlineKeyboard(buttons)
             .resize()
