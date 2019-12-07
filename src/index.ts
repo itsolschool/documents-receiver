@@ -55,6 +55,7 @@ async function setupBot() {
     setupReferralMiddleware(bot)
     setupStage(bot)
 
+    bot.telegram.webhookReply = false
 
     await bot.telegram.setWebhook(`https://itsolschool-bot-1.herokuapp.com${SECRET_WEBHOOK_PATH}`)
     bot.startWebhook(SECRET_WEBHOOK_PATH, null, +process.env.PORT)
