@@ -56,7 +56,7 @@ async function setupBot() {
     setupStage(bot)
 
 
-    await bot.telegram.setWebhook(`https://itsolschool-bot-2.herokuapp.com${SECRET_WEBHOOK_PATH}`)
+    await bot.telegram.setWebhook(`https://itsolschool-bot-1.herokuapp.com${SECRET_WEBHOOK_PATH}`)
     bot.startWebhook(SECRET_WEBHOOK_PATH, null, +process.env.PORT)
     debug('Bot started')
 
