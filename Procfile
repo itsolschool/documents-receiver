@@ -1,1 +1,1 @@
-web: gunicorn webhook_server:flask_app --log-file=- --log-level=debug
+web: node dist/index.js
