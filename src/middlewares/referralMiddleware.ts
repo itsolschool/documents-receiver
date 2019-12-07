@@ -9,9 +9,9 @@ const { compose, branch, optional, command } = Composer
 const CANDIDATE_TEAM_ID = '__candidateTeamId'
 
 export function setupReferralMiddleware(bot: Telegraf<ContextMessageUpdate>) {
-
     const middleware = compose([
-        branch(ctx => !ctx.session[CANDIDATE_TEAM_ID],
+        branch(
+            (ctx) => !ctx.session[CANDIDATE_TEAM_ID],
             // если мы не нашли id кандидатной команды
             compose([
                 command('start', async (ctx, next) => {
@@ -21,14 +21,15 @@ export function setupReferralMiddleware(bot: Telegraf<ContextMessageUpdate>) {
                         .eager('members')
                         .first()
 
-                    if (!candidateTeam)
-                        return ctx.reply(__('referral.wrongToken'))
+                    if (!candidateTeam) return ctx.reply(__('referral.wrongToken'))
 
                     if (candidateTeam.capacity <= candidateTeam.members.length)
-                        return ctx.reply(__('referral.teamIsOvercrowded', {
-                            team: candidateTeam.name,
-                            count: candidateTeam.capacity.toString()
-                        }))
+                        return ctx.reply(
+                            __('referral.teamIsOvercrowded', {
+                                team: candidateTeam.name,
+                                count: candidateTeam.capacity.toString()
+                            })
+                        )
 
                     ctx.session[CANDIDATE_TEAM_ID] = candidateTeam.$id()
 
@@ -39,8 +40,6 @@ export function setupReferralMiddleware(bot: Telegraf<ContextMessageUpdate>) {
             ]),
             // id команды есть. значит сейчас пользователь рассказывает своё имя
             async (ctx, next) => {
-
-
                 const user = await User.query()
                     .insert({
                         tgId: ctx.from.id,
@@ -63,5 +62,5 @@ export function setupReferralMiddleware(bot: Telegraf<ContextMessageUpdate>) {
         )
     ])
 
-    bot.use(optional(ctx => !ctx.user, middleware))
+    bot.use(optional((ctx) => !ctx.user, middleware))
 }
