@@ -73,8 +73,10 @@ async function setupGeneralFolder({ gdrive, config }: ServicesAndConfig) {
 async function hasRootFolderFound({ gdrive }: Partial<ServicesAndConfig>): Promise<boolean> {
     const folderIdOrNull = await AppVar.query().findById(APP_VAR_KEYS.GDRIVE_ROOT_FOLDER)
 
+    if (!folderIdOrNull) return false
+
     try {
-        const { data } = await gdrive.drive.files.get({ fileId: folderIdOrNull?.value })
+        const { data } = await gdrive.drive.files.get({ fileId: folderIdOrNull.value })
         return data.mimeType === GDRIVE_FOLDER_MIME
     } catch (e) {
         // Если папка не существует, значит у нас тупо битый id
@@ -127,6 +129,7 @@ async function setupTrelloSpawnList({ trello, config }: ServicesAndConfig) {
 
 async function hasSpawnList({ trello }: Partial<ServicesAndConfig>): Promise<boolean> {
     const listIdOrNull = await AppVar.query().findById(APP_VAR_KEYS.TRELLO_SPAWN_LIST_ID)
+    if (!listIdOrNull) return false
     try {
         await trello.getList(listIdOrNull?.value)
         return true
