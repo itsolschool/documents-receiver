@@ -12,7 +12,7 @@ export async function bindTrello<T extends ContextMessageUpdate>(bot: Telegraf<T
     if (token) {
         debug('Use saved key-token.')
     } else {
-        debug('No saved key-token found. Use \'anonymous\' state.')
+        debug("No saved key-token found. Use 'anonymous' state.")
     }
 
     const service = new TrelloService(token)
