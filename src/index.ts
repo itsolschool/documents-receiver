@@ -14,6 +14,7 @@ import afterStart from './helpers/afterStart'
 import bindConfig from './helpers/bindConfig'
 import { setupReferralMiddleware } from './middlewares/referralMiddleware'
 
+const SECRET_WEBHOOK_PATH = process.env.WEBHOOK_PATH
 const config: BotConfig = require(path.resolve(__dirname, '../config/general.json'))
 const debug = require('debug')('bot')
 
@@ -47,10 +48,8 @@ async function setupBot() {
     setupStage(bot)
 
 
-    bot.catch((error) => error)
-
-    // TODO переделать на webhook'и
-    bot.startPolling()
+    await bot.telegram.setWebhook(`https://itsolschool-bot-2.herokuapp.com${SECRET_WEBHOOK_PATH}`)
+    bot.startWebhook(SECRET_WEBHOOK_PATH, null, +process.env.PORT)
     debug('Bot started')
 
     const boundServices = {
