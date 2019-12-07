@@ -1,11 +1,20 @@
-import { BaseScene, BaseSceneOptions, ContextMessageUpdate, Middleware, SceneContextMessageUpdate } from 'telegraf'
+import {
+    BaseScene,
+    BaseSceneOptions,
+    ContextMessageUpdate,
+    Middleware,
+    SceneContextMessageUpdate,
+    Stage
+} from 'telegraf'
 
 import WizardContext from './context'
-// @ts-ignore -- магический метод unwrap. Не знаю для чего он нужен, но вот тут реально опасно
-const { compose, unwrap } = BaseScene
+import { SCENE } from '../../const/sceneId'
+// @ts-ignore -- магический метод unwrap. Не знаю для чего он нужен, но вот тут реально опасно, а ещё command...
+const { compose, unwrap, optional, command } = BaseScene
 
 interface WizardSceneOptions<TContext extends SceneContextMessageUpdate> extends BaseSceneOptions<TContext> {
-    steps: Middleware<TContext>[]
+    steps: Middleware<TContext>[],
+    cancelable?: boolean
 }
 
 export class WizardScene extends BaseScene<ContextMessageUpdate> {
@@ -17,6 +26,7 @@ export class WizardScene extends BaseScene<ContextMessageUpdate> {
         this.options = {
             steps,
             leaveHandlers: [],
+            cancelable: false,
             ...options
         }
         this.leaveHandler = compose(this.options.leaveHandlers)
@@ -39,6 +49,7 @@ export class WizardScene extends BaseScene<ContextMessageUpdate> {
 
     middleware(): Middleware<ContextMessageUpdate> {
         return compose([
+            optional(this.options.cancelable, command('cancel', Stage.enter(SCENE.MAIN))),
             (ctx, next) => {
                 ctx.wizard = new WizardContext(ctx, this.options.steps)
                 return next()
