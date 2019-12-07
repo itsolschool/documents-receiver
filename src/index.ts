@@ -7,7 +7,6 @@ import { bindRedisSession } from './helpers/redisSession'
 import { setupStage } from './helpers/stage'
 import { BotConfig } from 'telegraf'
 import { bindGDrive } from './helpers/gdrive'
-import * as fs from 'fs'
 import { bindTrello } from './helpers/trello'
 import * as path from 'path'
 import afterStart from './helpers/afterStart'
@@ -33,9 +32,18 @@ async function setupBot() {
 
     bot.use(attachUser)
 
-    const gdriveSecret = JSON.parse(
-        fs.readFileSync(path.join(__dirname, '../config/gdrive_client_secret.json'), 'utf8')
-    )
+    bot.use(async (ctx, next) => {
+        try {
+            await next()
+        } catch (e) {
+            debugger
+            console.log(e)
+            throw e
+        }
+    })
+
+
+    const gdriveSecret = JSON.parse(process.env.GDRIVE_OAUTH2_SECRET)
 
     bindConfig(bot, config)
 
