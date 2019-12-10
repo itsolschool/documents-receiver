@@ -23,7 +23,7 @@ exports.up = function(knex) {
             t.integer('ownerTeam')
                 .references('teams.teamId')
                 .onDelete('NO ACTION')
-            t.integer('documentId').primary()
+            t.increments('documentId').primary()
             // TODO возможно для milestone'ов надо будет сделать отдельную таблицу
             t.integer('milestone')
                 .notNullable()
