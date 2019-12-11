@@ -49,6 +49,7 @@ export function setupReferralMiddleware(bot: Telegraf<ContextMessageUpdate>) {
                     .eager('team')
 
                 ctx.user = user
+                ctx.session[CANDIDATE_TEAM_ID] = null
 
                 await ctx.reply(
                     __('referral.final', {
