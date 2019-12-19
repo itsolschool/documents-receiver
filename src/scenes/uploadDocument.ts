@@ -167,6 +167,9 @@ example acceptable links:
 https://drive.google.com/open?id=10ZE1hNdn1GVmAwtoaqNE3SU8buTcWcdWqD5u8St4so8
 https://docs.google.com/document/d/10ZE1hNdn1GVmAwtoaqNE3SU8buTcWcdWqD5u8St4so8/edit
 https://docs.google.com/presentation/d/1-yMTieiEdJ4-OaMISvj4LLgftJpE-nyZALwaXvFHQSI/edit
+https://docs.google.com/file/d/1-yMTieiEdJ4-OaMISvj4LLgftJpE-nyZALwaXvFHQSI/edit
+
+http://(docs|drive).google.com/.../[d/<FILE_ID>/]?[open=<FILE_ID>]
 */
 
 function getGDriveIdFromLink(link: string): void | string {
@@ -174,14 +177,11 @@ function getGDriveIdFromLink(link: string): void | string {
     const links = link.match(rx)
     if (!links || !links.length) return
     const firstLink = url.parse(links[0], true)
-    switch (firstLink.hostname) {
-        case 'docs.google.com':
-            const paths = firstLink.pathname.split('/')
-            const [, , /*empty*/ /*fileType*/ idDelimiter, id] = paths
-            if (idDelimiter != 'd') break
-            return id
-        case 'drive.google.com':
-            if (firstLink.pathname != '/open') break
-            return firstLink.query['id'] as string
-    }
+
+    if (!['docs.google.com', 'drive.google.com'].includes(firstLink.hostname)) return
+
+    const paths = firstLink.pathname.split('/')
+    if (paths.includes('d')) return paths[paths.indexOf('d') + 1]
+
+    return firstLink.query['id'] as string
 }
