@@ -47,7 +47,7 @@ async function replyWithMainView(ctx: ContextMessageUpdate) {
     if (ctx.user.team.isAdmin) {
         await ctx.reply(__('main.admin'), ADMIN_MARKUP)
     } else {
-        await ctx.reply(__('main.user'), USER_MARKUP)
+        await ctx.replyWithHTML(__('main.user__html', { team: ctx.user.team.name }), USER_MARKUP)
     }
 }
 
