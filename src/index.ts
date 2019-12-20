@@ -3,6 +3,7 @@ import { Model } from 'objection'
 import * as path from 'path'
 import { BotConfig } from 'telegraf'
 import * as Sentry from '@sentry/node'
+import { captureException, configureScope } from '@sentry/node'
 
 import attachUser from './middlewares/attachUser'
 import { bot } from './helpers/bot'
@@ -13,6 +14,7 @@ import { bindTrello } from './helpers/trello'
 import afterStart from './helpers/afterStart'
 import bindConfig from './helpers/bindConfig'
 import { setupReferralMiddleware } from './middlewares/referralMiddleware'
+import sentryExtraFromCtx from './helpers/sentryExtraFromCtx'
 
 const SECRET_WEBHOOK_PATH = process.env.WEBHOOK_PATH
 const config: BotConfig = require(path.resolve(__dirname, '../config/general.json'))
@@ -31,19 +33,22 @@ async function setupDb() {
 }
 
 async function setupBot() {
-    bot.catch(console.log)
-
-    bot.use(attachUser)
-
     bot.use(async (ctx, next) => {
+        configureScope((scope) => {
+            scope.setExtras({
+                config: config,
+                update: ctx.update
+            })
+        })
+
         try {
             await next()
         } catch (e) {
-            debugger
-            console.log(e)
-            throw e
+            captureException(e)
         }
     })
+
+    bot.use(attachUser)
 
 
     const gdriveSecret = JSON.parse(process.env.GDRIVE_OAUTH2_SECRET)
@@ -54,6 +59,8 @@ async function setupBot() {
     const redis = bindRedisSession(bot, process.env.REDIS_URL)
     const gdrive = await bindGDrive(bot, gdriveSecret)
     const trello = await bindTrello(bot)
+
+    bot.use(sentryExtraFromCtx('session'))
 
     setupReferralMiddleware(bot)
     setupStage(bot)
