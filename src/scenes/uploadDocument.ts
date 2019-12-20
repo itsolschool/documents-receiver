@@ -141,7 +141,7 @@ const fileGetter = /*new Composer().use(*/ async (ctx, next) => {
         return ctx.reply(__('uploadDocument.wrongFileType'))
     }
 
-    await ctx.sendChatAction(ctx.chat.id, 'typing')
+    await ctx.telegram.sendChatAction(ctx.chat.id, 'typing')
     await handleGDriveUpload(ctx, fileId)
     return ctx.scene.leave()
 }
