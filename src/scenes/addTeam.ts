@@ -1,10 +1,7 @@
 import { WizardScene } from '../helpers/wizard'
 import { __ } from '../helpers/strings'
 import Telegraf, { Composer, ContextMessageUpdate, Markup, Middleware } from 'telegraf'
-import { transaction } from 'objection'
 import Team from '../models/Team'
-import _ from 'lodash'
-import AppVar, { APP_VAR_KEYS } from '../models/AppVar'
 import { GREEN_MARK, RED_CROSS, WHITE_QUESTION_MARK } from '../const/emojies'
 import promiseListener from '../helpers/promiseListener'
 import { SCENE } from '../const/sceneId'
@@ -81,15 +78,6 @@ function getMarkByState(state: Error | boolean) {
 }
 
 async function showServiceBindingProgress(ctx: ContextMessageUpdate, team: Team): Promise<void> {
-    const { rootFolder, rootList } = await transaction(AppVar.knex(), async (tx) => {
-        const rootFolder = await AppVar.query(tx).findById(APP_VAR_KEYS.GDRIVE_ROOT_FOLDER)
-        const rootList = await AppVar.query(tx).findById(APP_VAR_KEYS.TRELLO_SPAWN_LIST_ID)
-        return {
-            rootFolder,
-            rootList
-        }
-    })
-
     const message = await ctx.reply(
         __('addTeam.result', {
             trello: getMarkByState(null),
@@ -97,22 +85,8 @@ async function showServiceBindingProgress(ctx: ContextMessageUpdate, team: Team)
         })
     )
 
-    const teamIdent = `${team.name}. ${team.schoolName}`
-    const gdrivePromise = ctx.gdrive.createFolder(_.escape(teamIdent), [rootFolder.value]).then((folder) =>
-        Team.query()
-            .findById(team.$id())
-            .patch({ gdriveFolderId: folder.id })
-    )
-
-    const cardParams = {
-        idList: rootList.value,
-        name: teamIdent
-    }
-    const trelloPromise = ctx.trello.addCard(cardParams).then((card) =>
-        Team.query()
-            .findById(team.$id())
-            .patch({ trelloCardId: card.id })
-    )
+    const gdrivePromise = ctx.gdrive.createFolderForTeam(team)
+    const trelloPromise = ctx.trello.createCardForTeam(team)
 
     const callback = async ([gdrive, trello]) => {
         await ctx.telegram.editMessageText(

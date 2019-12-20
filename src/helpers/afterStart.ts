@@ -35,7 +35,7 @@ async function setupFirstTeam() {
         team.isAdmin = true
 
         await Team.query().insert(team)
-        log("Org's team added.")
+        log('Org\'s team added.')
     }
 
     console.log(`Orgs team invite link: https://t.me/itss_docs_bot?start=${team.inviteToken}`)
@@ -48,6 +48,7 @@ async function setupGeneralFolder({ gdrive, config }: ServicesAndConfig) {
 
     if (folderAlreadyExists) {
         log('GDrive root folder already exists.')
+        gdrive.rootFolderId = (await AppVar.query().findById(APP_VAR_KEYS.GDRIVE_ROOT_FOLDER)).value
         return true
     }
 
@@ -66,6 +67,7 @@ async function setupGeneralFolder({ gdrive, config }: ServicesAndConfig) {
     })
 
     log('GDrive folder setup: %j', folder)
+    gdrive.rootFolderId = folder.id
 
     return true
 }
@@ -94,6 +96,7 @@ async function setupTrelloSpawnList({ trello, config }: ServicesAndConfig) {
 
     if (spawnListAlreadyExists) {
         log('Trello Spawn List found.')
+        trello.spawnListId = (await AppVar.query().findById(APP_VAR_KEYS.TRELLO_SPAWN_LIST_ID)).value
         return false
     }
 
@@ -123,6 +126,7 @@ async function setupTrelloSpawnList({ trello, config }: ServicesAndConfig) {
     })
 
     debug('Trello Spawn List created: %j', list)
+    trello.spawnListId = list.id
 
     return true
 }
@@ -131,7 +135,7 @@ async function hasSpawnList({ trello }: Partial<ServicesAndConfig>): Promise<boo
     const listIdOrNull = await AppVar.query().findById(APP_VAR_KEYS.TRELLO_SPAWN_LIST_ID)
     if (!listIdOrNull) return false
     try {
-        await trello.getList(listIdOrNull?.value)
+        await trello.getList(listIdOrNull.value)
         return true
     } catch (e) {
         if (e.error === 'invalid id') return false
