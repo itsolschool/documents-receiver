@@ -10,6 +10,7 @@ import Document from '../models/Document'
 import request from 'request'
 import { transaction } from 'objection'
 import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
+import { captureException } from '@sentry/node'
 import Schema$File = drive_v3.Schema$File
 
 /*
@@ -126,6 +127,7 @@ async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): P
 const fileGetter = /*new Composer().use(*/ async (ctx, next) => {
     const fileId = getGDriveIdFromLink(ctx.message.text)
     if (!fileId) {
+        captureException(new Error(`Cannot handle gdrive link: ${ctx.message.text}`))
         return ctx.reply(__('uploadDocument.incorrectLink'))
     }
 
