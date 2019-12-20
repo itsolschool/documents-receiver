@@ -140,7 +140,7 @@ const fileGetter = /*new Composer().use(*/ async (ctx) => {
     }
 
     await handleGDriveUpload(ctx, fileId as string)
-    return ctx.scene.leave()
+    return ctx.scene.enter(SCENE.MAIN)
 }
 // TODO реализовать загрузку файлов
 // .on('document',()=>void )
