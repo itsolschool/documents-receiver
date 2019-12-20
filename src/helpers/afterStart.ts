@@ -35,7 +35,7 @@ async function setupFirstTeam() {
         team.isAdmin = true
 
         await Team.query().insert(team)
-        log('Org\'s team added.')
+        log("Org's team added.")
     }
 
     console.log(`Orgs team invite link: https://t.me/itss_docs_bot?start=${team.inviteToken}`)
