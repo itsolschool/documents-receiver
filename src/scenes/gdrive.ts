@@ -14,6 +14,7 @@ scene
         await ctx.reply(__('gdrive.askForToken'), keyboard.extra())
     })
     .on('text', async (ctx) => {
+        await ctx.reply(__('gdrive.ok'))
         try {
             const creds = await ctx.gdrive.getCredentialsByCode(ctx.message.text)
             await AppVar.query().deleteById(APP_VAR_KEYS.GDRIVE_ACCESS_TOKEN)
@@ -21,13 +22,11 @@ scene
                 key: APP_VAR_KEYS.GDRIVE_ACCESS_TOKEN,
                 value: JSON.stringify(creds)
             })
+            await ctx.scene.enter(SCENE.MAIN)
         } catch (e) {
             await ctx.reply(`<code>${e}</code>`, Extra.HTML(true) as ExtraReplyMessage)
-        } finally {
-            await ctx.scene.leave()
+            await ctx.scene.enter(SCENE.MAIN)
+            throw e
         }
-    })
-    .command('cancel', async (ctx) => {
-        await ctx.reply(__('gdrive.warn'))
     })
 export default scene
