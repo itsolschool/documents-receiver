@@ -10,7 +10,7 @@ async function attachUser(ctx, next) {
     try {
         await next()
     } catch (e) {
-        configureScope(scope => {
+        configureScope((scope) => {
             scope.setUser({
                 id: ctx.user.$id(),
                 username: ctx.from.username
