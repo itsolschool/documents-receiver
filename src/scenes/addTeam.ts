@@ -85,8 +85,8 @@ async function showServiceBindingProgress(ctx: ContextMessageUpdate, team: Team)
         })
     )
 
-    const gdrivePromise = ctx.gdrive.createFolderForTeam(team)
-    const trelloPromise = ctx.trello.createCardForTeam(team)
+    const gdrivePromise = ctx.gdrive.createFolderForTeam(team).then(()=>true)
+    const trelloPromise = ctx.trello.createCardForTeam(team).then(()=>true)
 
     const callback = async ([gdrive, trello]) => {
         await ctx.telegram.editMessageText(
