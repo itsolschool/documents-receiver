@@ -1,4 +1,4 @@
-import { ContextMessageUpdate, Extra } from 'telegraf'
+import { ContextMessageUpdate, Extra, Markup } from 'telegraf'
 import { __ } from '../helpers/strings'
 import AppVar, { APP_VAR_KEYS } from '../models/AppVar'
 import { SCENE } from '../const/sceneId'
@@ -10,7 +10,8 @@ scene
     .enter(async (ctx) => {
         const authUrl = ctx.gdrive.getNewAuthUrl()
 
-        await ctx.reply(__('gdrive.askForToken', { link: authUrl }))
+        const keyboard = Markup.inlineKeyboard([Markup.urlButton('Авторизовать', authUrl)])
+        await ctx.reply(__('gdrive.askForToken'), keyboard.extra())
     })
     .on('text', async (ctx) => {
         try {
