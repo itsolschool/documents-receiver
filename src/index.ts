@@ -2,7 +2,7 @@ import Knex from 'knex'
 import { Model } from 'objection'
 import * as path from 'path'
 import { BotConfig } from 'telegraf'
-import Sentry from '@sentry/node'
+import * as Sentry from '@sentry/node'
 
 import attachUser from './middlewares/attachUser'
 import { bot } from './helpers/bot'
