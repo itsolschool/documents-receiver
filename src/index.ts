@@ -20,7 +20,7 @@ const SECRET_WEBHOOK_PATH = process.env.WEBHOOK_PATH
 const config: BotConfig = require(path.resolve(__dirname, '../config/general.json'))
 const debug = require('debug')('bot')
 
-Sentry.init({ dsn: 'https://50ab52136ccb41f88330c6c4b096eab8@sentry.io/1862805' })
+Sentry.init({ dsn: process.env.SENTRY_DSN })
 
 async function setupDb() {
     const knex = Knex({
