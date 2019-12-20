@@ -4,13 +4,12 @@ import { Composer, ContextMessageUpdate, Extra, Markup } from 'telegraf'
 import format from 'string-template'
 import { SCENE } from '../const/sceneId'
 import urlRegex from 'url-regex'
-import url from 'url'
 import { drive_v3 } from 'googleapis'
 import Document from '../models/Document'
 import request from 'request'
 import { transaction } from 'objection'
 import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
-import { captureException } from '@sentry/node'
+import * as url from 'url'
 import Schema$File = drive_v3.Schema$File
 
 /*
@@ -124,27 +123,23 @@ async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): P
     }
 }
 
-const fileGetter = /*new Composer().use(*/ async (ctx, next) => {
+const fileGetter = /*new Composer().use(*/ async (ctx) => {
     const fileId = getGDriveIdFromLink(ctx.message.text)
-    if (!fileId) {
-        captureException(new Error(`Cannot handle gdrive link: ${ctx.message.text}`))
-        return ctx.reply(__('uploadDocument.incorrectLink'))
-    }
 
     let file: Schema$File
     try {
         const response = await ctx.gdrive.drive.files.get({ fileId })
         file = response.data
     } catch (e) {
-        return ctx.reply(__('uploadDocument.incorrectLink'))
+        await ctx.reply(__('uploadDocument.incorrectLink'))
+        throw e
     }
     const _ = ctx.config.allowedMIMEs.includes(file.mimeType)
     if (!ctx.config.allowedMIMEs.includes(file.mimeType)) {
         return ctx.reply(__('uploadDocument.wrongFileType'))
     }
 
-    await ctx.telegram.sendChatAction(ctx.chat.id, 'typing')
-    await handleGDriveUpload(ctx, fileId)
+    await handleGDriveUpload(ctx, fileId as string)
     return ctx.scene.leave()
 }
 // TODO реализовать загрузку файлов
@@ -171,19 +166,22 @@ https://docs.google.com/document/d/10ZE1hNdn1GVmAwtoaqNE3SU8buTcWcdWqD5u8St4so8/
 https://docs.google.com/presentation/d/1-yMTieiEdJ4-OaMISvj4LLgftJpE-nyZALwaXvFHQSI/edit
 https://docs.google.com/file/d/1-yMTieiEdJ4-OaMISvj4LLgftJpE-nyZALwaXvFHQSI/edit
 
-http://(docs|drive).google.com/.../[d/<FILE_ID>/]?[open=<FILE_ID>]
+[http://](docs|drive).google.com/.../[d/<FILE_ID>/]?[open=<FILE_ID>]
 */
 
 function getGDriveIdFromLink(link: string): void | string {
     const rx = urlRegex({ exact: false, strict: false })
     const links = link.match(rx)
     if (!links || !links.length) return
-    const firstLink = url.parse(links[0], true)
+    let firstLink = links[0]
+    if (!firstLink.includes('://')) firstLink = 'https://' + firstLink
 
-    if (!['docs.google.com', 'drive.google.com'].includes(firstLink.hostname)) return
+    const firstLinkParsed = url.parse(firstLink, true)
 
-    const paths = firstLink.pathname.split('/')
+    if (!['docs.google.com', 'drive.google.com'].includes(firstLinkParsed.hostname)) return
+
+    const paths = firstLinkParsed.pathname.split('/')
     if (paths.includes('d')) return paths[paths.indexOf('d') + 1]
 
-    return firstLink.query['id'] as string
+    return firstLinkParsed.query['id'] as string
 }
