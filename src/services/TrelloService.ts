@@ -1,6 +1,7 @@
 import { Trello } from 'trello-helper'
 import { TrelloRequest } from 'trello-helper/build/TrelloRequest'
 import { RestPromise } from 'trello-helper/build/Interfaces'
+import Team from '../models/Team'
 
 interface AddBoardParams {
     name: string
@@ -43,11 +44,33 @@ export default class TrelloService extends Trello {
         if (auth) this.setCredentials(auth)
     }
 
+    private _spawnListId: void | string
+
+    get spawnListId(): string {
+        if (typeof this._spawnListId === 'string') return this._spawnListId
+        throw TypeError('Spawn List id should not be accessible before initialization')
+    }
+
+    set spawnListId(listId: string) {
+        this._spawnListId = listId
+    }
+
     public setCredentials(auth: string) {
         const [key, token] = auth.split(':')
         const trelloRequest = new TrelloRequest({ key, token })
         // @ts-ignore -- потому что очень и очень плохо лезть в private поля базовых классов, но нам надо
         this.trelloRequest = trelloRequest
+    }
+
+    public async createCardForTeam(team: Team): Promise<void> {
+        const card = await this.addCard({
+            idList: this.spawnListId,
+            name: team.represent
+        })
+
+        await Team.query()
+            .findById(team.$id())
+            .patch({ trelloCardId: card.id })
     }
 
     public async addBoard(params: AddBoardParams): RestPromise {

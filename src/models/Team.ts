@@ -4,25 +4,8 @@ import User from './User'
 import Document from './Document'
 
 export default class Team extends Model {
-    capacity!: number
-    name!: string
-    schoolName!: string
-    trelloCardId?: string
-    gdriveFolderId?: string
-    members!: User[]
-    documents!: Document[]
-    inviteToken?: string
-    isAdmin: boolean
-
-    setNewInviteToken() {
-        const sha1 = crypto.createHash('sha256')
-        const result = sha1.update(`&^qast^${this.name}  ${new Date()}--${this.schoolName}`).digest('hex')
-        this.inviteToken = result.slice(0, 10)
-    }
-
     static tableName = 'teams'
     static idColumn = 'teamId'
-
     static jsonSchema = {
         type: 'object',
         required: ['capacity', 'name', 'schoolName'],
@@ -56,6 +39,15 @@ export default class Team extends Model {
             }
         }
     }
+    capacity!: number
+    name!: string
+    schoolName!: string
+    trelloCardId?: string
+    gdriveFolderId?: string
+    members!: User[]
+    documents!: Document[]
+    inviteToken?: string
+    isAdmin: boolean
 
     static get relationMappings() {
         const User = require('./User').default
@@ -78,5 +70,15 @@ export default class Team extends Model {
                 }
             }
         }
+    }
+
+    get represent(): string {
+        return `${this.name}. ${this.schoolName}`
+    }
+
+    setNewInviteToken() {
+        const sha1 = crypto.createHash('sha256')
+        const result = sha1.update(`&^qast^${this.name}  ${new Date()}--${this.schoolName}`).digest('hex')
+        this.inviteToken = result.slice(0, 10)
     }
 }

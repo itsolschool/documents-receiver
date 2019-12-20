@@ -1,6 +1,8 @@
 import { drive_v3, google } from 'googleapis'
 import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client'
 import { Credentials } from 'google-auth-library/build/src/auth/credentials'
+import Team from '../models/Team'
+import { escape } from 'lodash'
 import Drive = drive_v3.Drive
 import Schema$File = drive_v3.Schema$File
 
@@ -34,6 +36,17 @@ export default class GDriveService {
         this.authClient = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
 
         this.drive = google.drive({ version: 'v3', auth: this.authClient })
+    }
+
+    private _rootFolderId: string | void
+
+    get rootFolderId(): string {
+        if (typeof this._rootFolderId === 'string') return this._rootFolderId
+        throw TypeError('Root folder id should be initialized before using')
+    }
+
+    set rootFolderId(folderId: string) {
+        this._rootFolderId = folderId
     }
 
     setCredentials(credentials: Credentials) {
@@ -82,5 +95,12 @@ export default class GDriveService {
 
         const { data } = await this.drive.files.create({ requestBody })
         return data
+    }
+
+    async createFolderForTeam(team: Team): Promise<void> {
+        const folder = await this.createFolder(escape(team.represent), [this.rootFolderId])
+        await Team.query()
+            .findById(team.$id())
+            .patch({ gdriveFolderId: folder.id })
     }
 }
