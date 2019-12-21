@@ -10,7 +10,8 @@ export { Credentials }
 export const GDRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder'
 
 const SCOPES = [
-    'https://www.googleapis.com/auth/drive.file'
+    'https://www.googleapis.com/auth/drive.file',
+    'https://www.googleapis.com/auth/drive'
 ]
 
 export type OAuthClientSettings = {
