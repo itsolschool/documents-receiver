@@ -10,9 +10,7 @@ export { Credentials }
 export const GDRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder'
 
 const SCOPES = [
-    'https://www.googleapis.com/auth/drive',
-    'https://www.googleapis.com/auth/drive.file',
-    'https://www.googleapis.com/auth/drive.appdata'
+    'https://www.googleapis.com/auth/drive.file'
 ]
 
 export type OAuthClientSettings = {
@@ -69,11 +67,11 @@ export default class GDriveService {
 
     async checkOperational(): Promise<boolean> {
         const fileMeta = {
-            name: 'tester.txt',
-            parents: ['appDataFolder']
+            name: 'SERVICE OPERATIONAL INDICATOR'
         }
         const media = {
-            mimeType: 'text/plain'
+            mimeType: 'text/plain',
+            body: 'Этот файл нужно удалить руками, раз сам не удалился :('
         }
 
         const response = await this.drive.files.create({
