@@ -5,6 +5,7 @@ import Team from '../models/Team'
 import { GREEN_MARK, RED_CROSS, WHITE_QUESTION_MARK } from '../const/emojies'
 import promiseListener from '../helpers/promiseListener'
 import { SCENE } from '../const/sceneId'
+import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
 
 function onlyText(cb: Middleware<ContextMessageUpdate>): Middleware<ContextMessageUpdate> {
     return (ctx, next) => {
@@ -67,7 +68,7 @@ const scene = new WizardScene(
         })
 
         await Promise.all([sendInviteLink(ctx, team), showServiceBindingProgress(ctx, team)])
-        return ctx.scene.leave()
+        return ctx.scene.enter(SCENE.MAIN)
     }
 ).enter(Telegraf.reply(__('addTeam.askName')))
 
@@ -114,7 +115,10 @@ async function sendInviteLink(ctx: ContextMessageUpdate, team: Team) {
         .patch({ inviteToken: team.inviteToken })
 
     const link = `https://t.me/${ctx.me}?start=${team.inviteToken}`
-    await ctx.reply(__('addTeam.link', { link }))
+
+    // @ts-ignore -- потому что removeKeyboard должен принимать boolean, а не строку
+    const removeMarkup = Markup.removeKeyboard(true).extra()
+    await ctx.reply(__('addTeam.link', { link }), removeMarkup as ExtraEditMessage)
 }
 
 export default scene
