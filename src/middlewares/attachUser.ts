@@ -9,7 +9,7 @@ const attachUser: Middleware<ContextMessageUpdate> = async (ctx, next) => {
 
     configureScope((scope) => {
         scope.setUser({
-            id: ctx.from.id,
+            id: ctx.from.id.toString(),
             username: ctx.from.username
         })
     })
