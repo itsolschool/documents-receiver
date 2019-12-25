@@ -15,6 +15,7 @@ import afterStart from './helpers/afterStart'
 import bindConfig from './helpers/bindConfig'
 import { setupReferralMiddleware } from './middlewares/referralMiddleware'
 import sentryExtraFromCtx from './helpers/sentryExtraFromCtx'
+import User from './models/User'
 
 const SECRET_WEBHOOK_PATH = process.env.WEBHOOK_PATH
 const config: BotConfig = require(path.resolve(__dirname, '../config/general.json'))
@@ -49,6 +50,13 @@ async function setupBot() {
     })
 
     bot.use(attachUser)
+
+    // TODO удалить потом эту команду
+    bot.command('skidoo', async (ctx) => {
+        await ctx.reply(`Вы изгнаны из команды ${ctx.user?.team.name}`)
+        if (ctx.user)
+            await User.query().deleteById(ctx.user.$id())
+    })
 
 
     const gdriveSecret = JSON.parse(process.env.GDRIVE_OAUTH2_SECRET)
