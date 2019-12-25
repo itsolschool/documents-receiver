@@ -43,7 +43,7 @@ export const strings = {
 /cancel - всегда вернёт в главное меню`,
         btns: {
             addTeam: 'Создать команду',
-            setupGDrive: 'Авторизовать GDrive',
+            setupGDrive: 'WIP: Авторизовать GDrive',
             healthcheck: 'Состояние',
             uploadDocuments: 'Загрузить документ'
         }

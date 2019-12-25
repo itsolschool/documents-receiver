@@ -9,6 +9,11 @@ import { transaction } from 'objection'
 const scene = new CancelableScene<ContextMessageUpdate>(SCENE.GDRIVE_SETUP)
 scene
     .enter(async (ctx) => {
+        await ctx.reply('Простите, этот раздел в разработке')
+        return ctx.scene.enter(SCENE.MAIN)
+
+        // TODO продумать как авторизовывать приложение. Потому что при создании нового auth url старый токен убивается
+
         const authUrl = ctx.gdrive.getNewAuthUrl()
 
         const keyboard = Markup.inlineKeyboard([Markup.urlButton('Авторизовать', authUrl)])
