@@ -68,6 +68,7 @@ const scene = new WizardScene(
         })
 
         await Promise.all([sendInviteLink(ctx, team), showServiceBindingProgress(ctx, team)])
+        await ctx.scene.leave()
         return ctx.scene.enter(SCENE.MAIN)
     }
 ).enter(Telegraf.reply(__('addTeam.askName')))

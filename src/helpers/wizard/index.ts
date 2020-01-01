@@ -29,7 +29,14 @@ export class WizardScene extends BaseScene<ContextMessageUpdate> {
             cancelable: false,
             ...options
         }
-        this.leaveHandler = compose(this.options.leaveHandlers)
+        this.leaveHandler = compose(
+            this.options.leaveHandlers.concat(
+                (ctx, next) => {
+                    ctx.wizard.state = null
+                    return next()
+                }
+            )
+        )
     }
 
     get ttl() {
