@@ -5,6 +5,8 @@
     "lib": ["es2015"],
     "moduleResolution": "node",
     "sourceMap": true,
+    "inlineSources": true,
+    "sourceRoot": "/",
     "outDir": "dist",
     "baseUrl": ".",
     "paths": {
