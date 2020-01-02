@@ -7,7 +7,6 @@ import urlRegex from 'url-regex'
 import { drive_v3 } from 'googleapis'
 import Document from '../models/Document'
 import request from 'request'
-import { transaction } from 'objection'
 import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
 import * as url from 'url'
 import Schema$File = drive_v3.Schema$File
@@ -18,40 +17,34 @@ import Schema$File = drive_v3.Schema$File
  * загрузить документ
  */
 
-const milestoneSelector = new Composer()
-    .action(/^selMile(\d+)$/, async (ctx) => {
-        const milestoneId = +ctx.match[1]
-        await ctx.editMessageText(
-            __('uploadDocument.milestoneChosen__html', { milestone: ctx.config.milestones[milestoneId] }),
-            Extra.HTML(true) as ExtraEditMessage
-        )
-        ctx.wizard.state['milestoneId'] = milestoneId
-        ctx.wizard.next()
-        await ctx.reply(__('uploadDocument.askDocument'))
-    })
+// "selMile0000" => 0000
+const milestoneSelector = Composer.action(/^selMile(\d+)$/, async (ctx) => {
+    const milestoneId = +ctx.match[1]
+    await ctx.editMessageText(
+        __('uploadDocument.milestoneChosen__html', { milestone: ctx.config.milestones[milestoneId] }),
+        Extra.HTML(true) as ExtraEditMessage
+    )
+    ctx.wizard.state['milestoneId'] = milestoneId
+    ctx.wizard.next()
+    await ctx.reply(__('uploadDocument.askDocument'))
+})
 
-async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): Promise<any> {
+async function handleGDriveUpload(
+    ctx: ContextMessageUpdate,
+    { gdriveFileId }: { gdriveFileId?: string } = {}
+): Promise<any> {
     const milestoneId = ctx.wizard.state['milestoneId']
     const progressMessage = await ctx.reply(__('uploadDocument.uploadProgress'))
 
-    const { lastDocument, lastVersion } = await transaction(Document.knex(), async (tx) => ({
-        lastVersion: await Document.query(tx)
-            .where({
-                teamId: ctx.user.teamId,
-                milestone: milestoneId
-            })
-            .resultSize(),
-        lastDocument: await Document.query(tx)
-            .where({
-                teamId: ctx.user.teamId,
-                milestone: milestoneId
-            })
-            .orderBy('attachedTime', 'desc')
-            .first()
-    }))
+    const teamDocuments = Document.query().where({
+        teamId: ctx.user.teamId,
+        milestone: milestoneId
+    })
+
+    const initialDocumentsCount = await teamDocuments.resultSize()
 
     const name = format(ctx.config.fileMask, {
-        versionNumber: lastVersion + 1,
+        versionNumber: initialDocumentsCount + 1,
         milestoneTitle: ctx.config.milestones[milestoneId],
         milestoneNum: milestoneId + 1
     })
@@ -61,8 +54,8 @@ async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): P
     }
 
     let gdrivePromise
-    if (fileId) {
-        gdrivePromise = ctx.gdrive.drive.files.copy({ fileId, requestBody: resource, fields: 'id' })
+    if (gdriveFileId) {
+        gdrivePromise = ctx.gdrive.drive.files.copy({ fileId: gdriveFileId, requestBody: resource, fields: 'id' })
     } else {
         const link = await ctx.telegram.getFileLink(ctx.message.document.file_id)
         const media = {
@@ -109,13 +102,19 @@ async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): P
         Extra.HTML(true) as ExtraEditMessage
     )
 
-    if (lastDocument) {
-        await ctx.trello.delete({ path: `${trelloAttachmentsPath}/${lastDocument.trelloAttachmentId}` })
+    // если был хоть один документ до этого
+    if (initialDocumentsCount >= 1) {
+        // первый документ тот, который мы создали несколько шагов назад. его пропускаем
+        const prevDocument = await teamDocuments
+            .orderBy('attachedTime', 'desc')
+            .offset(1)
+            .first()
+        await ctx.trello.delete({ path: `${trelloAttachmentsPath}/${prevDocument.trelloAttachmentId}` })
 
-        lastDocument.trelloAttachmentId = null
+        prevDocument.trelloAttachmentId = null
         await Document.query()
-            .findById(lastDocument.$id())
-            .patch(lastDocument)
+            .findById(prevDocument.$id())
+            .patch(prevDocument)
     }
 }
 
@@ -138,7 +137,7 @@ const fileGetter = new Composer()
             return ctx.reply(__('uploadDocument.wrongFileType'))
         }
 
-        await handleGDriveUpload(ctx, fileId as string)
+        await handleGDriveUpload(ctx, { gdriveFileId: fileId })
         return ctx.scene.enter(SCENE.MAIN)
     })
     // TODO реализовать загрузку файлов
