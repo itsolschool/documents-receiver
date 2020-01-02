@@ -1,5 +1,5 @@
 import Knex from 'knex'
-import { Model } from 'objection'
+import { knexSnakeCaseMappers, Model } from 'objection'
 import * as path from 'path'
 import { BotConfig } from 'telegraf'
 import * as Sentry from '@sentry/node'
@@ -7,7 +7,7 @@ import { captureException, configureScope } from '@sentry/node'
 
 import attachUser from './middlewares/attachUser'
 import { bot } from './helpers/bot'
-import { bindRedisSession } from './helpers/redisSession'
+import { bindSession } from './helpers/redisSession'
 import { setupStage } from './helpers/stage'
 import { bindGDrive } from './helpers/gdrive'
 import { bindTrello } from './helpers/trello'
@@ -16,8 +16,8 @@ import bindConfig from './helpers/bindConfig'
 import { setupReferralMiddleware } from './middlewares/referralMiddleware'
 import sentryExtraFromCtx from './helpers/sentryExtraFromCtx'
 import User from './models/User'
+import * as url from 'url'
 
-const SECRET_WEBHOOK_PATH = process.env.WEBHOOK_PATH
 const config: BotConfig = require(path.resolve(__dirname, '../config/general.json'))
 const debug = require('debug')('bot')
 
@@ -25,7 +25,8 @@ Sentry.init({ dsn: process.env.SENTRY_DSN })
 
 async function setupDb() {
     const knex = Knex({
-        ...require('../knexfile.js')[process.env.NODE_ENV || 'development']
+        ...require('../knexfile.js')[process.env.NODE_ENV || 'development'],
+        ...knexSnakeCaseMappers()
     })
     Model.knex(knex)
     debug('Migration started...')
