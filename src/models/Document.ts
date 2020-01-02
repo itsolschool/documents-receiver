@@ -47,4 +47,7 @@ export default class Document extends Model {
             }
         }
     }
+
+    // https://vincit.github.io/objection.js/api/model/static-properties.html#static-uselimitinfirst
+    static useLimitInFirst = true
 }
