@@ -26,7 +26,6 @@ export default async (args: ServicesAndConfig) =>
 async function setupFirstTeam({ bot }: ServicesAndConfig) {
     let log = debug.extend('db')
 
-    // TODO использовать .where('isAdmin', true).first
     let team = await Team.query()
         .where('isAdmin', true)
         .first()

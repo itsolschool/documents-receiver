@@ -140,7 +140,6 @@ const fileGetter = new Composer()
         await handleGDriveUpload(ctx, { gdriveFileId: fileId })
         return ctx.scene.enter(SCENE.MAIN)
     })
-    // TODO реализовать загрузку файлов
     .on('document', async (ctx) => {
         const allowedFile = ctx.config.allowedMIMEs.includes(ctx.message.document.mime_type)
         if (!allowedFile) {
