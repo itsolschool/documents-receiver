@@ -29,10 +29,6 @@ const milestoneSelector = new Composer()
         ctx.wizard.next()
         await ctx.reply(__('uploadDocument.askDocument'))
     })
-    .use((ctx, next) => {
-        debugger
-        return next()
-    })
 
 async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): Promise<any> {
     const milestoneId = ctx.wizard.state['milestoneId']
@@ -123,27 +119,38 @@ async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): P
     }
 }
 
-const fileGetter = /*new Composer().use(*/ async (ctx) => {
-    const fileId = getGDriveIdFromLink(ctx.message.text)
+const fileGetter = new Composer()
+    .on('text', async (ctx) => {
+        const fileId = getGDriveIdFromLink(ctx.message.text)
 
-    let file: Schema$File
-    try {
-        const response = await ctx.gdrive.drive.files.get({ fileId })
-        file = response.data
-    } catch (e) {
-        await ctx.reply(__('uploadDocument.incorrectLink'))
-        throw e
-    }
-    const _ = ctx.config.allowedMIMEs.includes(file.mimeType)
-    if (!ctx.config.allowedMIMEs.includes(file.mimeType)) {
-        return ctx.reply(__('uploadDocument.wrongFileType'))
-    }
+        if (typeof fileId !== 'string') {
+            return ctx.reply(__('uploadDocument.noLinkFound'))
+        }
+        let file: Schema$File
+        try {
+            const response = await ctx.gdrive.drive.files.get({ fileId })
+            file = response.data
+        } catch (e) {
+            await ctx.reply(__('uploadDocument.noAccessToLink'))
+            throw e
+        }
+        if (!ctx.config.allowedMIMEs.includes(file.mimeType)) {
+            return ctx.reply(__('uploadDocument.wrongFileType'))
+        }
 
-    await handleGDriveUpload(ctx, fileId as string)
-    return ctx.scene.enter(SCENE.MAIN)
-}
-// TODO реализовать загрузку файлов
-// .on('document',()=>void )
+        await handleGDriveUpload(ctx, fileId as string)
+        return ctx.scene.enter(SCENE.MAIN)
+    })
+    // TODO реализовать загрузку файлов
+    .on('document', async (ctx) => {
+        const allowedFile = ctx.config.allowedMIMEs.includes(ctx.message.document.mime_type)
+        if (!allowedFile) {
+            return ctx.reply(__('uploadDocument.wrongFileType'))
+        }
+
+        await handleGDriveUpload(ctx)
+        return ctx.scene.enter(SCENE.MAIN)
+    })
 
 const scene = new WizardScene(SCENE.UPLOAD_DOCUMENT, { cancelable: true }, milestoneSelector, fileGetter)
 
