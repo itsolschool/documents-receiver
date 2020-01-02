@@ -4,15 +4,22 @@ import AppVar, { APP_VAR_KEYS } from '../models/AppVar'
 
 const debug = require('debug')('bot:context:trello')
 
-export async function bindTrello<T extends ContextMessageUpdate>(bot: Telegraf<T>) {
-    // TODO когда-нибудь надо сделать нормальный OAuth как с GDrive сделано
-    let tokenVar = await AppVar.query().findById(APP_VAR_KEYS.TRELLO_TOKEN)
-    const token = tokenVar?.value || process.env.TRELLO_TOKEN_SECRET
+export async function bindTrello<T extends ContextMessageUpdate>(bot: Telegraf<T>, staticToken?: string) {
+    var token: string
 
-    if (token) {
-        debug('Use saved key-token.')
+    // TODO когда-нибудь надо сделать нормальный OAuth как с GDrive сделано
+    let tokenFromDB = await AppVar.query().findById(APP_VAR_KEYS.TRELLO_TOKEN)
+    if (tokenFromDB?.value) {
+        token = tokenFromDB?.value
+        debug('Use Trello token:secret from DB')
+    } else if (staticToken) {
+        token = staticToken
+        debug('Use static Trello token:secret')
     } else {
-        debug("No saved key-token found. Use 'anonymous' state.")
+        throw new Error(
+            `No Trello token found. Use env-var TRELLO_TOKEN_SECRET to store token:secret, ` +
+                `or set it in app_var "${APP_VAR_KEYS.TRELLO_TOKEN}" db value`
+        )
     }
 
     const service = new TrelloService(token)
