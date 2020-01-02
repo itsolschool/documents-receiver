@@ -75,9 +75,16 @@ async function setupBot() {
 
     bot.telegram.webhookReply = false
 
-    await bot.telegram.setWebhook(`https://itsolschool-bot-1.herokuapp.com${SECRET_WEBHOOK_PATH}`)
-    bot.startWebhook(SECRET_WEBHOOK_PATH, null, +process.env.PORT)
-    debug('Bot started')
+    if (!process.env.WEBHOOK) {
+        await bot.telegram.deleteWebhook()
+        bot.startPolling()
+        debug('Bot started with Longpolling')
+    } else {
+        const webhook = new url.URL(process.env.WEBHOOK)
+        await bot.telegram.setWebhook(webhook.href)
+        bot.startWebhook(webhook.pathname, null, +process.env.PORT)
+        debug('Bot started with WebHook on ' + webhook.href)
+    }
 
     const boundServices = {
         redis,
