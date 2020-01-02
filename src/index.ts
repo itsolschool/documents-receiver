@@ -78,12 +78,12 @@ async function setupBot() {
     // Теперь так делать нельзя
     bot.telegram.webhookReply = false
 
-    if (!process.env.WEBHOOK) {
+    if (!process.env.WEBHOOK_URL) {
         await bot.telegram.deleteWebhook()
         bot.startPolling()
         debug('Bot started with Longpolling')
     } else {
-        const webhook = new url.URL(process.env.WEBHOOK)
+        const webhook = new url.URL(process.env.WEBHOOK_URL)
         await bot.telegram.setWebhook(webhook.href)
         bot.startWebhook(webhook.pathname, null, +process.env.PORT)
         debug('Bot started with WebHook on ' + webhook.href)
