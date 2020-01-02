@@ -1,12 +1,12 @@
 import Knex from 'knex'
 import { knexSnakeCaseMappers, Model } from 'objection'
 import * as path from 'path'
-import { BotConfig } from 'telegraf'
+import Telegraf, { BotConfig } from 'telegraf'
 import * as Sentry from '@sentry/node'
 import { captureException, configureScope } from '@sentry/node'
+import * as url from 'url'
 
 import attachUser from './middlewares/attachUser'
-import { bot } from './helpers/bot'
 import { bindSession } from './helpers/redisSession'
 import { setupStage } from './helpers/stage'
 import { bindGDrive } from './helpers/gdrive'
@@ -16,7 +16,6 @@ import bindConfig from './helpers/bindConfig'
 import { setupReferralMiddleware } from './middlewares/referralMiddleware'
 import sentryExtraFromCtx from './helpers/sentryExtraFromCtx'
 import User from './models/User'
-import * as url from 'url'
 
 const config: BotConfig = require(path.resolve(__dirname, '../config/general.json'))
 const debug = require('debug')('bot')
@@ -35,6 +34,8 @@ async function setupDb() {
 }
 
 async function setupBot() {
+    const bot = new Telegraf(process.env.TG_BOT_TOKEN)
+
     bot.use(async (ctx, next) => {
         configureScope((scope) => {
             scope.setExtras({
