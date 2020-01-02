@@ -64,8 +64,7 @@ async function setupBot() {
 
     bindConfig(bot, config)
 
-
-    const redis = bindRedisSession(bot, process.env.REDIS_URL)
+    const redis = bindSession(bot, process.env.REDIS_URL)
     const gdrive = await bindGDrive(bot, gdriveSecret)
     const trello = await bindTrello(bot)
 
