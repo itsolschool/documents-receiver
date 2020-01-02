@@ -55,7 +55,7 @@ async function setupGeneralFolder({ gdrive, config }: ServicesAndConfig) {
     if (folderAlreadyExists) {
         log('GDrive root folder already exists.')
         gdrive.rootFolderId = (await AppVar.query().findById(APP_VAR_KEYS.GDRIVE_ROOT_FOLDER)).value
-        return true
+        return
     }
 
     log('No root folder found. Creating new one...')
@@ -75,7 +75,7 @@ async function setupGeneralFolder({ gdrive, config }: ServicesAndConfig) {
     log('GDrive folder setup: %j', folder)
     gdrive.rootFolderId = folder.id
 
-    return true
+    return
 }
 
 async function hasRootFolderFound({ gdrive }: Partial<ServicesAndConfig>): Promise<boolean> {
@@ -103,7 +103,7 @@ async function setupTrelloSpawnList({ trello, config }: ServicesAndConfig) {
     if (spawnListAlreadyExists) {
         log('Trello Spawn List found.')
         trello.spawnListId = (await AppVar.query().findById(APP_VAR_KEYS.TRELLO_SPAWN_LIST_ID)).value
-        return false
+        return
     }
 
     debug('Trello Spawn List not found. Creating new one...')
@@ -134,7 +134,7 @@ async function setupTrelloSpawnList({ trello, config }: ServicesAndConfig) {
     debug('Trello Spawn List created: %j', list)
     trello.spawnListId = list.id
 
-    return true
+    return
 }
 
 async function hasSpawnList({ trello }: Partial<ServicesAndConfig>): Promise<boolean> {
