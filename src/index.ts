@@ -66,7 +66,7 @@ async function setupBot() {
 
     const redis = bindSession(bot, process.env.REDIS_URL)
     const gdrive = await bindGDrive(bot, gdriveSecret)
-    const trello = await bindTrello(bot)
+    const trello = await bindTrello(bot, process.env.TRELLO_TOKEN_SECRET)
 
     bot.use(sentryExtraFromCtx('session'))
 
