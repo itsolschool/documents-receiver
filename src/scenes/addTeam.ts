@@ -62,13 +62,18 @@ const scene = new WizardScene(
     }),
     confirmStep,
     async (ctx) => {
-        const team = await Team.query().insertAndFetch({
-            name: ctx.wizard.state['teamName'],
-            schoolName: ctx.wizard.state['teamSchool']
-        })
+        try {
+            const team = await Team.query().insertAndFetch({
+                name: ctx.wizard.state['teamName'],
+                schoolName: ctx.wizard.state['teamSchool']
+            })
 
-        await Promise.all([sendInviteLink(ctx, team), showServiceBindingProgress(ctx, team)])
-        await ctx.scene.leave()
+            await Promise.all([sendInviteLink(ctx, team), showServiceBindingProgress(ctx, team)])
+        } catch (e) {
+            // TODO возможно стоит удалять неудавшуюся команду и все связные с ней ресурсы
+            await ctx.scene.leave()
+            throw e
+        }
         return ctx.scene.enter(SCENE.MAIN)
     }
 ).enter(Telegraf.reply(__('addTeam.askName')))
