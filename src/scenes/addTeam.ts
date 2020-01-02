@@ -114,8 +114,9 @@ async function sendInviteLink(ctx: ContextMessageUpdate, team: Team) {
     await Team.query()
         .findById(team.$id())
         .patch({ inviteToken: team.inviteToken })
+    const botInfo = await ctx.telegram.getMe()
 
-    const link = `https://t.me/${ctx.me}?start=${team.inviteToken}`
+    const link = `https://t.me/${botInfo.username}?start=${team.inviteToken}`
 
     // @ts-ignore -- потому что removeKeyboard должен принимать boolean, а не строку
     const removeMarkup = Markup.removeKeyboard(true).extra()
