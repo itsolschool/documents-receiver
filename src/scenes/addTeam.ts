@@ -53,7 +53,7 @@ const scene = new WizardScene(
         }
         await ctx.replyWithHTML(
             __('addTeam.confirm__html', team),
-            Markup.keyboard([Markup.button(__('addTeam.confirmYes')), Markup.button(__('addTeam.confirmNo'))])
+            Markup.keyboard([[Markup.button(__('addTeam.confirmYes')), Markup.button(__('addTeam.confirmNo'))]])
                 .resize()
                 .oneTime()
                 .extra()
