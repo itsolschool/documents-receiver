@@ -73,6 +73,8 @@ async function setupBot() {
     setupReferralMiddleware(bot)
     setupStage(bot)
 
+    // Раньше можно было в HTTP Response выдать команду, вместо ещё одного запроса.
+    // Теперь так делать нельзя
     bot.telegram.webhookReply = false
 
     if (!process.env.WEBHOOK) {
@@ -90,7 +92,8 @@ async function setupBot() {
         redis,
         gdrive,
         trello,
-        config
+        config,
+        bot
     }
     return boundServices
 }
@@ -98,4 +101,8 @@ async function setupBot() {
 Promise.resolve()
     .then(setupDb)
     .then(setupBot)
+    .catch((e) => {
+        console.error(e)
+        process.exit(1)
+    })
     .then(afterStart)

@@ -4,7 +4,7 @@ import GDriveService, { GDRIVE_FOLDER_MIME } from '../services/GDriveService'
 import TrelloService from '../services/TrelloService'
 import { __ } from './strings'
 import { transaction } from 'objection'
-import { BotConfig } from 'telegraf'
+import Telegraf, { BotConfig, ContextMessageUpdate } from 'telegraf'
 
 const debug = require('debug')('bot:after')
 
@@ -12,21 +12,24 @@ interface ServicesAndConfig {
     gdrive: GDriveService
     trello: TrelloService
     config: BotConfig
+    bot: Telegraf<ContextMessageUpdate>
 }
 
 export default async (args: ServicesAndConfig) =>
     Promise.all([
-        setupFirstTeam(),
+        setupFirstTeam(args),
         setupGeneralFolder(args),
         // hasRootFolderFound(args),
         setupTrelloSpawnList(args)
     ])
 
-async function setupFirstTeam() {
+async function setupFirstTeam({ bot }: ServicesAndConfig) {
     let log = debug.extend('db')
 
     // TODO использовать .where('isAdmin', true).first
-    let team = await Team.query().findById(1)
+    let team = await Team.query()
+        .where('isAdmin', true)
+        .first()
 
     if (!team) {
         team = new Team()
@@ -39,7 +42,9 @@ async function setupFirstTeam() {
         log("Org's team added.")
     }
 
-    console.log(`Orgs team invite link: https://t.me/itss_docs_bot?start=${team.inviteToken}`)
+    let botInfo = await bot.telegram.getMe()
+
+    console.log(`Orgs team invite link: https://t.me/${botInfo.username}?start=${team.inviteToken}`)
 }
 
 async function setupGeneralFolder({ gdrive, config }: ServicesAndConfig) {
