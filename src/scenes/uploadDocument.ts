@@ -104,22 +104,18 @@ async function handleGDriveUpload(
         Extra.HTML(true) as ExtraEditMessage
     )
 
-
     await transaction(Document.knex(), async (tx) => {
-        const staleDocumentsQ = teamMilestoneDocuments
-            .transacting(tx)
-            .whereNot({
-                [Document.idColumn]: insertedDocument.$id(),
-                trelloAttachmentId: null
-            })
+        const staleDocumentsQ = teamMilestoneDocuments.transacting(tx).whereNot({
+            [Document.idColumn]: insertedDocument.$id(),
+            trelloAttachmentId: null
+        })
 
         const staleDocuments = await staleDocumentsQ
         await Promise.all(
             staleDocuments.map(({ trelloAttachmentId: attachmentId }) =>
-                ctx.trello.delete({ path: `${trelloAttachmentsPath}/${attachmentId}` })
-                    .catch((e) => {
-                        if (e.statusCode !== 404) throw e
-                    })
+                ctx.trello.delete({ path: `${trelloAttachmentsPath}/${attachmentId}` }).catch((e) => {
+                    if (e.statusCode !== 404) throw e
+                })
             )
         )
 
