@@ -9,6 +9,7 @@ import Document from '../models/Document'
 import request from 'request'
 import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
 import * as url from 'url'
+import { transaction } from 'objection'
 import Schema$File = drive_v3.Schema$File
 
 /*
@@ -36,15 +37,15 @@ async function handleGDriveUpload(
     const milestoneId = ctx.wizard.state['milestoneId']
     const progressMessage = await ctx.reply(__('uploadDocument.uploadProgress'))
 
-    const teamDocuments = Document.query().where({
+    const teamMilestoneDocuments = Document.query().where({
         teamId: ctx.user.teamId,
         milestone: milestoneId
     })
 
-    const initialDocumentsCount = await teamDocuments.resultSize()
+    const currentDocumentsCount = await teamMilestoneDocuments.resultSize()
 
     const name = format(ctx.config.fileMask, {
-        versionNumber: initialDocumentsCount + 1,
+        versionNumber: currentDocumentsCount + 1,
         milestoneTitle: ctx.config.milestones[milestoneId],
         milestoneNum: milestoneId + 1
     })
@@ -66,6 +67,7 @@ async function handleGDriveUpload(
     }
     const trelloAttachmentsPath = `/1/cards/${ctx.user.team.trelloCardId}/attachments`
 
+    let insertedDocument
     try {
         const {
             data: { id: newFileId }
@@ -77,7 +79,7 @@ async function handleGDriveUpload(
             options: { name, url: gdriveAccessUrl }
         })
 
-        await Document.query().insert({
+        insertedDocument = await Document.query().insertAndFetch({
             teamId: ctx.user.teamId,
             gdriveFileId: newFileId,
             trelloAttachmentId: trelloAttachId,
@@ -102,20 +104,27 @@ async function handleGDriveUpload(
         Extra.HTML(true) as ExtraEditMessage
     )
 
-    // если был хоть один документ до этого
-    if (initialDocumentsCount >= 1) {
-        // первый документ тот, который мы создали несколько шагов назад. его пропускаем
-        const prevDocument = await teamDocuments
-            .orderBy('attachedTime', 'desc')
-            .offset(1)
-            .first()
-        await ctx.trello.delete({ path: `${trelloAttachmentsPath}/${prevDocument.trelloAttachmentId}` })
 
-        prevDocument.trelloAttachmentId = null
-        await Document.query()
-            .findById(prevDocument.$id())
-            .patch(prevDocument)
-    }
+    await transaction(Document.knex(), async (tx) => {
+        const staleDocumentsQ = teamMilestoneDocuments
+            .transacting(tx)
+            .whereNot({
+                [Document.idColumn]: insertedDocument.$id(),
+                trelloAttachmentId: null
+            })
+
+        const staleDocuments = await staleDocumentsQ
+        await Promise.all(
+            staleDocuments.map(({ trelloAttachmentId: attachmentId }) =>
+                ctx.trello.delete({ path: `${trelloAttachmentsPath}/${attachmentId}` })
+                    .catch((e) => {
+                        if (e.statusCode !== 404) throw e
+                    })
+            )
+        )
+
+        await staleDocumentsQ.patch({ trelloAttachmentId: null })
+    })
 }
 
 const fileGetter = new Composer()
