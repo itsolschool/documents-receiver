@@ -24,13 +24,13 @@ export default class Team extends Model {
                 type: 'string'
             },
             trelloCardId: {
-                type: 'string'
+                type: ['string', 'null']
             },
             gdriveFolderId: {
-                type: 'string'
+                type: ['string', 'null']
             },
             inviteToken: {
-                type: 'string',
+                type: ['string', 'null'],
                 maxLength: 10,
                 minLength: 10
             },
@@ -39,14 +39,15 @@ export default class Team extends Model {
             }
         }
     }
+
     capacity!: number
     name!: string
     schoolName!: string
-    trelloCardId?: string
-    gdriveFolderId?: string
+    trelloCardId: string | null
+    gdriveFolderId: string | null
     members!: User[]
     documents!: Document[]
-    inviteToken?: string
+    inviteToken: string | null
     isAdmin: boolean
 
     static get relationMappings() {
