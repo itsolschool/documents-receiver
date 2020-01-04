@@ -10,6 +10,7 @@ import request from 'request'
 import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
 import * as url from 'url'
 import { transaction } from 'objection'
+import Team from '../models/Team'
 import Schema$File = drive_v3.Schema$File
 
 /*
@@ -18,27 +19,55 @@ import Schema$File = drive_v3.Schema$File
  * загрузить документ
  */
 
+// "selTeam0000" => 0000
+const teamSelector = Composer.action(/^selTeam(\d+)$/, async (ctx) => {
+    const teamId = +ctx.match[1]
+    const team = await Team.query().findById(teamId)
+
+    await ctx.editMessageText(
+        __('uploadDocument.teamChosen__html', { team: team.name }),
+        Extra.HTML(true) as ExtraEditMessage
+    )
+
+    ctx.wizard.state['teamId'] = teamId
+    ctx.wizard.next()
+
+    return replyWithMilestonesAsker(ctx)
+})
+
+function replyWithMilestonesAsker(ctx: ContextMessageUpdate) {
+    const buttons = ctx.config.milestones.map((title, i) => [Markup.callbackButton(title, `selMile${i}`)])
+    return ctx.reply(
+        __('uploadDocument.askMilestone'),
+        Markup.inlineKeyboard(buttons)
+            .resize()
+            .extra()
+    )
+}
+
 // "selMile0000" => 0000
 const milestoneSelector = Composer.action(/^selMile(\d+)$/, async (ctx) => {
     const milestoneId = +ctx.match[1]
+
     await ctx.editMessageText(
         __('uploadDocument.milestoneChosen__html', { milestone: ctx.config.milestones[milestoneId] }),
         Extra.HTML(true) as ExtraEditMessage
     )
+
     ctx.wizard.state['milestoneId'] = milestoneId
     ctx.wizard.next()
+
     await ctx.reply(__('uploadDocument.askDocument'))
 })
 
 async function handleGDriveUpload(
     ctx: ContextMessageUpdate,
-    { gdriveFileId }: { gdriveFileId?: string } = {}
+    { gdriveFileId, teamId, milestoneId }: { gdriveFileId?: string; teamId: number; milestoneId: number }
 ): Promise<any> {
-    const milestoneId = ctx.wizard.state['milestoneId']
     const progressMessage = await ctx.reply(__('uploadDocument.uploadProgress'))
 
     const teamMilestoneDocuments = Document.query().where({
-        teamId: ctx.user.teamId,
+        teamId,
         milestone: milestoneId
     })
 
@@ -80,7 +109,7 @@ async function handleGDriveUpload(
         })
 
         insertedDocument = await Document.query().insertAndFetch({
-            teamId: ctx.user.teamId,
+            teamId,
             gdriveFileId: newFileId,
             trelloAttachmentId: trelloAttachId,
             milestone: milestoneId
@@ -130,6 +159,7 @@ const fileGetter = new Composer()
         if (typeof fileId !== 'string') {
             return ctx.reply(__('uploadDocument.noLinkFound'))
         }
+
         let file: Schema$File
         try {
             const response = await ctx.gdrive.drive.files.get({ fileId })
@@ -138,11 +168,16 @@ const fileGetter = new Composer()
             await ctx.reply(__('uploadDocument.noAccessToLink'))
             throw e
         }
+
         if (!ctx.config.allowedMIMEs.includes(file.mimeType)) {
             return ctx.reply(__('uploadDocument.wrongFileType'))
         }
 
-        await handleGDriveUpload(ctx, { gdriveFileId: fileId })
+        await handleGDriveUpload(ctx, {
+            gdriveFileId: fileId,
+            milestoneId: ctx.wizard.state['milestoneId'],
+            teamId: ctx.wizard.state['teamId']
+        })
         return ctx.scene.enter(SCENE.MAIN)
     })
     .on('document', async (ctx) => {
@@ -151,17 +186,30 @@ const fileGetter = new Composer()
             return ctx.reply(__('uploadDocument.wrongFileType'))
         }
 
-        await handleGDriveUpload(ctx)
+        await handleGDriveUpload(ctx, {
+            milestoneId: ctx.wizard.state['milestoneId'],
+            teamId: ctx.wizard.state['teamId']
+        })
         return ctx.scene.enter(SCENE.MAIN)
     })
 
-const scene = new WizardScene(SCENE.UPLOAD_DOCUMENT, { cancelable: true }, milestoneSelector, fileGetter)
+const scene = new WizardScene(SCENE.UPLOAD_DOCUMENT, { cancelable: true }, teamSelector, milestoneSelector, fileGetter)
 
-scene.enter((ctx) => {
-    const buttons = ctx.config.milestones.map((title, i) => [Markup.callbackButton(title, `selMile${i}`)])
+scene.enter(async (ctx) => {
+    if (!ctx.user.team.isAdmin) {
+        ctx.wizard.next() // пропускаем вопрос про команду
+        ctx.wizard.state['teamId'] = ctx.user.team.$id()
+        return replyWithMilestonesAsker(ctx)
+    }
+
+    const teams = await Team.query().whereNot('isAdmin', true)
+    // максимальное количество кнопок в колонке - 100, в строке - 8
+    // TODO сделать пагинацию, если будут проблемы с количеством команд
+    if (teams.length > 100) throw TypeError(`Too much teams to represent in list. ${teams.length} > 100`)
+    const teamsBtns = teams.map((team) => [Markup.callbackButton(team.name, `selTeam${team.$id()}`)])
     return ctx.reply(
-        __('uploadDocument.askMilestone'),
-        Markup.inlineKeyboard(buttons)
+        __('uploadDocument.askTeam'),
+        Markup.inlineKeyboard(teamsBtns)
             .resize()
             .extra()
     )

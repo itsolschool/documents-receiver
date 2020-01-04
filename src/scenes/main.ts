@@ -32,8 +32,8 @@ scene
     .use(replyWithMainView)
 
 const ADMIN_MARKUP = Markup.keyboard([
-    [__('main.btns.addTeam'), __('main.btns.setupGDrive')],
-    [__('main.btns.healthcheck')]
+    [__('main.btns.addTeam'), __('main.btns.uploadDocuments')],
+    [__('main.btns.healthcheck'), __('main.btns.setupGDrive')]
 ])
     .oneTime(true)
     .resize(true)

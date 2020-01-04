@@ -82,6 +82,8 @@ export const strings = {
         link: 'Ссылка для команды:\n{link}'
     },
     uploadDocument: {
+        askTeam: 'От имени какой команды надо загрузить?',
+        teamChosen__html: 'От имени команды <code>{team}</code>',
         askMilestone: `Какой файл ты хочешь загрузить?`,
         milestoneChosen__html: `Ну хорошо. Значит загружаем <code>{milestone}</code>`,
         askDocument: `Теперь нужна ссылка на Google Документ или файл на Google Диске.
