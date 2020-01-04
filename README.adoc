@@ -5,7 +5,7 @@
 
 Для запуска требуются Node.js 12 и Yarn
 
-[source,shell script]
+[source,bash]
 ----
 yarn  # Установка зависимостей
 yarn build  # Компиляция исходников
@@ -13,7 +13,7 @@ yarn build  # Компиляция исходников
 
 Конфигурацию можно link:docs/config.adoc[*найти тут*].
 
-[source,shell script]
+[source,bash]
 ----
 node dist/index.js  # Запуск приложения
 ----
