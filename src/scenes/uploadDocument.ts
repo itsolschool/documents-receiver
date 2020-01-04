@@ -7,9 +7,9 @@ import urlRegex from 'url-regex'
 import { drive_v3 } from 'googleapis'
 import Document from '../models/Document'
 import request from 'request'
-import { transaction } from 'objection'
 import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
 import * as url from 'url'
+import { transaction } from 'objection'
 import Schema$File = drive_v3.Schema$File
 
 /*
@@ -18,44 +18,34 @@ import Schema$File = drive_v3.Schema$File
  * загрузить документ
  */
 
-const milestoneSelector = new Composer()
-    .action(/^selMile(\d+)$/, async (ctx) => {
-        const milestoneId = +ctx.match[1]
-        await ctx.editMessageText(
-            __('uploadDocument.milestoneChosen__html', { milestone: ctx.config.milestones[milestoneId] }),
-            Extra.HTML(true) as ExtraEditMessage
-        )
-        ctx.wizard.state['milestoneId'] = milestoneId
-        ctx.wizard.next()
-        await ctx.reply(__('uploadDocument.askDocument'))
-    })
-    .use((ctx, next) => {
-        debugger
-        return next()
-    })
+// "selMile0000" => 0000
+const milestoneSelector = Composer.action(/^selMile(\d+)$/, async (ctx) => {
+    const milestoneId = +ctx.match[1]
+    await ctx.editMessageText(
+        __('uploadDocument.milestoneChosen__html', { milestone: ctx.config.milestones[milestoneId] }),
+        Extra.HTML(true) as ExtraEditMessage
+    )
+    ctx.wizard.state['milestoneId'] = milestoneId
+    ctx.wizard.next()
+    await ctx.reply(__('uploadDocument.askDocument'))
+})
 
-async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): Promise<any> {
+async function handleGDriveUpload(
+    ctx: ContextMessageUpdate,
+    { gdriveFileId }: { gdriveFileId?: string } = {}
+): Promise<any> {
     const milestoneId = ctx.wizard.state['milestoneId']
     const progressMessage = await ctx.reply(__('uploadDocument.uploadProgress'))
 
-    const { lastDocument, lastVersion } = await transaction(Document.knex(), async (tx) => ({
-        lastVersion: await Document.query(tx)
-            .where({
-                teamId: ctx.user.teamId,
-                milestone: milestoneId
-            })
-            .resultSize(),
-        lastDocument: await Document.query(tx)
-            .where({
-                teamId: ctx.user.teamId,
-                milestone: milestoneId
-            })
-            .orderBy('attachedTime', 'desc')
-            .first()
-    }))
+    const teamMilestoneDocuments = Document.query().where({
+        teamId: ctx.user.teamId,
+        milestone: milestoneId
+    })
+
+    const currentDocumentsCount = await teamMilestoneDocuments.resultSize()
 
     const name = format(ctx.config.fileMask, {
-        versionNumber: lastVersion + 1,
+        versionNumber: currentDocumentsCount + 1,
         milestoneTitle: ctx.config.milestones[milestoneId],
         milestoneNum: milestoneId + 1
     })
@@ -65,8 +55,8 @@ async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): P
     }
 
     let gdrivePromise
-    if (fileId) {
-        gdrivePromise = ctx.gdrive.drive.files.copy({ fileId, requestBody: resource, fields: 'id' })
+    if (gdriveFileId) {
+        gdrivePromise = ctx.gdrive.drive.files.copy({ fileId: gdriveFileId, requestBody: resource, fields: 'id' })
     } else {
         const link = await ctx.telegram.getFileLink(ctx.message.document.file_id)
         const media = {
@@ -77,6 +67,7 @@ async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): P
     }
     const trelloAttachmentsPath = `/1/cards/${ctx.user.team.trelloCardId}/attachments`
 
+    let insertedDocument
     try {
         const {
             data: { id: newFileId }
@@ -88,7 +79,7 @@ async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): P
             options: { name, url: gdriveAccessUrl }
         })
 
-        await Document.query().insert({
+        insertedDocument = await Document.query().insertAndFetch({
             teamId: ctx.user.teamId,
             gdriveFileId: newFileId,
             trelloAttachmentId: trelloAttachId,
@@ -113,37 +104,56 @@ async function handleGDriveUpload(ctx: ContextMessageUpdate, fileId?: string): P
         Extra.HTML(true) as ExtraEditMessage
     )
 
-    if (lastDocument) {
-        await ctx.trello.delete({ path: `${trelloAttachmentsPath}/${lastDocument.trelloAttachmentId}` })
+    await transaction(Document.knex(), async (tx) => {
+        const staleDocumentsQ = teamMilestoneDocuments.transacting(tx).whereNot({
+            [Document.idColumn]: insertedDocument.$id(),
+            trelloAttachmentId: null
+        })
 
-        lastDocument.trelloAttachmentId = null
-        await Document.query()
-            .findById(lastDocument.$id())
-            .patch(lastDocument)
-    }
+        const staleDocuments = await staleDocumentsQ
+        await Promise.all(
+            staleDocuments.map(({ trelloAttachmentId: attachmentId }) =>
+                ctx.trello.delete({ path: `${trelloAttachmentsPath}/${attachmentId}` }).catch((e) => {
+                    if (e.statusCode !== 404) throw e
+                })
+            )
+        )
+
+        await staleDocumentsQ.patch({ trelloAttachmentId: null })
+    })
 }
 
-const fileGetter = /*new Composer().use(*/ async (ctx) => {
-    const fileId = getGDriveIdFromLink(ctx.message.text)
+const fileGetter = new Composer()
+    .on('text', async (ctx) => {
+        const fileId = getGDriveIdFromLink(ctx.message.text)
 
-    let file: Schema$File
-    try {
-        const response = await ctx.gdrive.drive.files.get({ fileId })
-        file = response.data
-    } catch (e) {
-        await ctx.reply(__('uploadDocument.incorrectLink'))
-        throw e
-    }
-    const _ = ctx.config.allowedMIMEs.includes(file.mimeType)
-    if (!ctx.config.allowedMIMEs.includes(file.mimeType)) {
-        return ctx.reply(__('uploadDocument.wrongFileType'))
-    }
+        if (typeof fileId !== 'string') {
+            return ctx.reply(__('uploadDocument.noLinkFound'))
+        }
+        let file: Schema$File
+        try {
+            const response = await ctx.gdrive.drive.files.get({ fileId })
+            file = response.data
+        } catch (e) {
+            await ctx.reply(__('uploadDocument.noAccessToLink'))
+            throw e
+        }
+        if (!ctx.config.allowedMIMEs.includes(file.mimeType)) {
+            return ctx.reply(__('uploadDocument.wrongFileType'))
+        }
 
-    await handleGDriveUpload(ctx, fileId as string)
-    return ctx.scene.enter(SCENE.MAIN)
-}
-// TODO реализовать загрузку файлов
-// .on('document',()=>void )
+        await handleGDriveUpload(ctx, { gdriveFileId: fileId })
+        return ctx.scene.enter(SCENE.MAIN)
+    })
+    .on('document', async (ctx) => {
+        const allowedFile = ctx.config.allowedMIMEs.includes(ctx.message.document.mime_type)
+        if (!allowedFile) {
+            return ctx.reply(__('uploadDocument.wrongFileType'))
+        }
+
+        await handleGDriveUpload(ctx)
+        return ctx.scene.enter(SCENE.MAIN)
+    })
 
 const scene = new WizardScene(SCENE.UPLOAD_DOCUMENT, { cancelable: true }, milestoneSelector, fileGetter)
 

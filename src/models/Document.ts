@@ -2,16 +2,8 @@ import { Model } from 'objection'
 import Team from './Team'
 
 export default class Document extends Model {
-    documentId!: number
-    team!: Team
-    milestone!: number
-    trelloAttachmentId?: string
-    gdriveFileId!: string
-    teamId!: number
-
     static tableName = 'documents'
     static idColumn = 'documentId'
-
     static jsonSchema = {
         type: 'object',
         required: ['milestone', 'gdriveFileId', 'teamId'],
@@ -23,7 +15,7 @@ export default class Document extends Model {
                 type: 'integer'
             },
             trelloAttachmentId: {
-                type: 'string'
+                type: ['string', 'null']
             },
             gdriveFileId: {
                 type: 'string'
@@ -33,6 +25,15 @@ export default class Document extends Model {
             }
         }
     }
+    // https://vincit.github.io/objection.js/api/model/static-properties.html#static-uselimitinfirst
+    static useLimitInFirst = true
+
+    documentId!: number
+    team!: Team
+    milestone!: number
+    trelloAttachmentId: string | null
+    gdriveFileId!: string
+    teamId!: number
 
     static get relationMappings() {
         const Team = require('./Team').default
