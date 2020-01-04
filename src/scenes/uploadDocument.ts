@@ -1,6 +1,6 @@
 import { WizardScene } from '../helpers/wizard'
 import { __ } from '../helpers/strings'
-import { Composer, ContextMessageUpdate, Extra, Markup } from 'telegraf'
+import { CallbackButton, Composer, ContextMessageUpdate, Extra, Markup } from 'telegraf'
 import format from 'string-template'
 import { SCENE } from '../const/sceneId'
 import urlRegex from 'url-regex'
@@ -12,6 +12,9 @@ import * as url from 'url'
 import { transaction } from 'objection'
 import Team from '../models/Team'
 import Schema$File = drive_v3.Schema$File
+
+
+const TEAMS_PAGE_SIZE = 99 // + кнопки пагинации
 
 /*
  * Шаги:
@@ -202,12 +205,18 @@ scene.enter(async (ctx) => {
         return replyWithMilestonesAsker(ctx)
     }
 
-    const teams = await Team.query().whereNot('isAdmin', true)
-    // максимальное количество кнопок в колонке - 100, в строке - 8
-    // TODO сделать пагинацию, если будут проблемы с количеством команд
-    if (teams.length > 100) throw TypeError(`Too much teams to represent in list. ${teams.length} > 100`)
-    const teamsBtns = teams.map((team) => [Markup.callbackButton(team.name, `selTeam${team.$id()}`)])
+    let teamsBtns = await teamsButtonsWithPagination()
     return ctx.reply(
+        __('uploadDocument.askTeam'),
+        Markup.inlineKeyboard(teamsBtns)
+            .resize()
+            .extra()
+    )
+}).action(/^teamPage(\d+)$/, async (ctx) => {
+    const page = +ctx.match[1]
+
+    let teamsBtns = await teamsButtonsWithPagination(page)
+    return ctx.editMessageText(
         __('uploadDocument.askTeam'),
         Markup.inlineKeyboard(teamsBtns)
             .resize()
@@ -242,4 +251,23 @@ function getGDriveIdFromLink(link: string): void | string {
     if (paths.includes('d')) return paths[paths.indexOf('d') + 1]
 
     return firstLinkParsed.query['id'] as string
+}
+
+async function teamsButtonsWithPagination(page: number = 0): Promise<CallbackButton[][]> {
+    const teams = await Team.query().where('isAdmin', false).page(page, TEAMS_PAGE_SIZE)
+    let teamsBtns = teams.results.map((team) => [Markup.callbackButton(team.name, `selTeam${team.$id()}`)])
+
+    const pagesTotal = Math.ceil(teams.total / TEAMS_PAGE_SIZE)
+
+    if (teams.total > TEAMS_PAGE_SIZE) {
+        const pagination = [
+            page > 0 && Markup.callbackButton(`⬅`, `teamPage${page - 1}`),
+            Markup.callbackButton(`${page + 1} из ${pagesTotal}`, 'noop'),
+            page < pagesTotal - 1 && Markup.callbackButton(`➡`, `teamPage${page + 1}`)
+        ].filter((a) => !!a)
+
+        teamsBtns.push(pagination)
+    }
+
+    return teamsBtns
 }
