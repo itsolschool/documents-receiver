@@ -41,9 +41,10 @@ async function setupFirstTeam({ bot }: ServicesAndConfig) {
         log("Org's team added.")
     }
 
-    let botInfo = await bot.telegram.getMe()
-
-    console.log(`Orgs team invite link: https://t.me/${botInfo.username}?start=${team.inviteToken}`)
+    if (process.env.NODE_ENV === 'development') {
+        let botInfo = await bot.telegram.getMe()
+        console.log(`Orgs team invite link: https://t.me/${botInfo.username}?start=${team.inviteToken}`)
+    }
 }
 
 async function setupGeneralFolder({ gdrive, config }: ServicesAndConfig) {
