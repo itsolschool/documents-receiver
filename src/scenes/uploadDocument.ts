@@ -23,7 +23,7 @@ const TEAMS_PAGE_SIZE = 99 // + кнопки пагинации
  */
 
 // "selTeam0000" => 0000
-const teamSelector = Composer.action(/^selTeam(\d+)$/, async (ctx) => {
+const teamSelector = new Composer().action(/^selTeam(\d+)$/, async (ctx) => {
     const teamId = +ctx.match[1]
     const team = await Team.query().findById(teamId)
 
@@ -36,6 +36,30 @@ const teamSelector = Composer.action(/^selTeam(\d+)$/, async (ctx) => {
     ctx.wizard.next()
 
     return replyWithMilestonesAsker(ctx)
+}).action(/^teamPage(\d+)$/, async (ctx) => {
+    const page = +ctx.match[1]
+
+    let teamsBtns = await teamsButtonsWithPagination(page)
+    return ctx.editMessageText(
+        __('uploadDocument.askTeam'),
+        Markup.inlineKeyboard(teamsBtns)
+            .resize()
+            .extra()
+    )
+}).use(async (ctx) => {
+    if (!ctx.user.team.isAdmin) {
+        ctx.wizard.next() // пропускаем вопрос про команду
+        ctx.wizard.state['teamId'] = ctx.user.team.$id()
+        return replyWithMilestonesAsker(ctx)
+    }
+
+    let teamsBtns = await teamsButtonsWithPagination()
+    return ctx.reply(
+        __('uploadDocument.askTeam'),
+        Markup.inlineKeyboard(teamsBtns)
+            .resize()
+            .extra()
+    )
 })
 
 function replyWithMilestonesAsker(ctx: ContextMessageUpdate) {
@@ -198,30 +222,10 @@ const fileGetter = new Composer()
 
 const scene = new WizardScene(SCENE.UPLOAD_DOCUMENT, { cancelable: true }, teamSelector, milestoneSelector, fileGetter)
 
-scene.enter(async (ctx) => {
-    if (!ctx.user.team.isAdmin) {
-        ctx.wizard.next() // пропускаем вопрос про команду
-        ctx.wizard.state['teamId'] = ctx.user.team.$id()
-        return replyWithMilestonesAsker(ctx)
-    }
-
-    let teamsBtns = await teamsButtonsWithPagination()
-    return ctx.reply(
-        __('uploadDocument.askTeam'),
-        Markup.inlineKeyboard(teamsBtns)
-            .resize()
-            .extra()
-    )
-}).action(/^teamPage(\d+)$/, async (ctx) => {
-    const page = +ctx.match[1]
-
-    let teamsBtns = await teamsButtonsWithPagination(page)
-    return ctx.editMessageText(
-        __('uploadDocument.askTeam'),
-        Markup.inlineKeyboard(teamsBtns)
-            .resize()
-            .extra()
-    )
+// TODO реализовать сцены без прелюдии. Поскольку в этом боте почти все сцены - формочки,
+// то надо бы сразу переходить к полям
+scene.enter((ctx, next) => {
+    return scene.middleware.call(scene)(ctx, next)
 })
 
 export default scene
