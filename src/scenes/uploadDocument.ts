@@ -13,7 +13,6 @@ import { transaction } from 'objection'
 import Team from '../models/Team'
 import Schema$File = drive_v3.Schema$File
 
-
 const TEAMS_PAGE_SIZE = 99 // + кнопки пагинации
 
 /*
@@ -23,44 +22,47 @@ const TEAMS_PAGE_SIZE = 99 // + кнопки пагинации
  */
 
 // "selTeam0000" => 0000
-const teamSelector = new Composer().action(/^selTeam(\d+)$/, async (ctx) => {
-    const teamId = +ctx.match[1]
-    const team = await Team.query().findById(teamId)
+const teamSelector = new Composer()
+    .action(/^selTeam(\d+)$/, async (ctx) => {
+        const teamId = +ctx.match[1]
+        const team = await Team.query().findById(teamId)
 
-    await ctx.editMessageText(
-        __('uploadDocument.teamChosen__html', { team: team.name }),
-        Extra.HTML(true) as ExtraEditMessage
-    )
+        await ctx.editMessageText(
+            __('uploadDocument.teamChosen__html', { team: team.name }),
+            Extra.HTML(true) as ExtraEditMessage
+        )
 
-    ctx.wizard.state['teamId'] = teamId
-    ctx.wizard.next()
+        ctx.wizard.state['teamId'] = teamId
+        ctx.wizard.next()
 
-    return replyWithMilestonesAsker(ctx)
-}).action(/^teamPage(\d+)$/, async (ctx) => {
-    const page = +ctx.match[1]
-
-    let teamsBtns = await teamsButtonsWithPagination(page)
-    return ctx.editMessageText(
-        __('uploadDocument.askTeam'),
-        Markup.inlineKeyboard(teamsBtns)
-            .resize()
-            .extra()
-    )
-}).use(async (ctx) => {
-    if (!ctx.user.team.isAdmin) {
-        ctx.wizard.next() // пропускаем вопрос про команду
-        ctx.wizard.state['teamId'] = ctx.user.team.$id()
         return replyWithMilestonesAsker(ctx)
-    }
+    })
+    .action(/^teamPage(\d+)$/, async (ctx) => {
+        const page = +ctx.match[1]
 
-    let teamsBtns = await teamsButtonsWithPagination()
-    return ctx.reply(
-        __('uploadDocument.askTeam'),
-        Markup.inlineKeyboard(teamsBtns)
-            .resize()
-            .extra()
-    )
-})
+        let teamsBtns = await teamsButtonsWithPagination(page)
+        return ctx.editMessageText(
+            __('uploadDocument.askTeam'),
+            Markup.inlineKeyboard(teamsBtns)
+                .resize()
+                .extra()
+        )
+    })
+    .use(async (ctx) => {
+        if (!ctx.user.team.isAdmin) {
+            ctx.wizard.next() // пропускаем вопрос про команду
+            ctx.wizard.state['teamId'] = ctx.user.team.$id()
+            return replyWithMilestonesAsker(ctx)
+        }
+
+        let teamsBtns = await teamsButtonsWithPagination()
+        return ctx.reply(
+            __('uploadDocument.askTeam'),
+            Markup.inlineKeyboard(teamsBtns)
+                .resize()
+                .extra()
+        )
+    })
 
 function replyWithMilestonesAsker(ctx: ContextMessageUpdate) {
     const buttons = ctx.config.milestones.map((title, i) => [Markup.callbackButton(title, `selMile${i}`)])
@@ -258,7 +260,9 @@ function getGDriveIdFromLink(link: string): void | string {
 }
 
 async function teamsButtonsWithPagination(page: number = 0): Promise<CallbackButton[][]> {
-    const teams = await Team.query().where('isAdmin', false).page(page, TEAMS_PAGE_SIZE)
+    const teams = await Team.query()
+        .where('isAdmin', false)
+        .page(page, TEAMS_PAGE_SIZE)
     let teamsBtns = teams.results.map((team) => [Markup.callbackButton(team.name, `selTeam${team.$id()}`)])
 
     const pagesTotal = Math.ceil(teams.total / TEAMS_PAGE_SIZE)
