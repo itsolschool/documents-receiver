@@ -2,6 +2,12 @@ import lodash from 'lodash'
 import format from 'string-template'
 import { GREEN_MARK, RED_CROSS, WHITE_QUESTION_MARK } from '../const/emojies'
 
+/**
+ * @deprecated use phrase.some.path(...data)
+ * @param key
+ * @param data
+ * @private
+ */
 export function __(key: string, data?: { [key: string]: string }) {
     const source = lodash.get(strings, key, '')
 
@@ -11,7 +17,6 @@ export function __(key: string, data?: { [key: string]: string }) {
 
     return format(source || key, data)
 }
-
 
 type InstrumentedStringTree<T> = {
     [P in keyof T]: T[P] extends string ? (values?: { [key: string]: string }) => string : InstrumentedStringTree<T[P]>
