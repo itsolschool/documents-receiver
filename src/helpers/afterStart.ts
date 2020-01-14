@@ -1,9 +1,10 @@
 import Team from '../models/Team'
 import AppVar, { APP_VAR_KEYS } from '../models/AppVar'
-import GDriveService, { GDRIVE_FOLDER_MIME } from '../services/GDriveService'
+import GDriveService from '../services/GDriveService'
 import TrelloService from '../services/TrelloService'
 import { __ } from './strings'
 import { transaction } from 'objection'
+import { captureException } from '@sentry/node'
 import Telegraf, { BotConfig, ContextMessageUpdate } from 'telegraf'
 
 const debug = require('debug')('bot:after')
@@ -16,12 +17,7 @@ interface ServicesAndConfig {
 }
 
 export default async (args: ServicesAndConfig) =>
-    Promise.all([
-        setupFirstTeam(args),
-        setupGeneralFolder(args),
-        // hasRootFolderFound(args),
-        setupTrelloSpawnList(args)
-    ])
+    Promise.all([setupFirstTeam(args), checkGDrive(args), setupTrelloSpawnList(args)])
 
 async function setupFirstTeam({ bot }: ServicesAndConfig) {
     let log = debug.extend('db')
@@ -47,51 +43,15 @@ async function setupFirstTeam({ bot }: ServicesAndConfig) {
     }
 }
 
-async function setupGeneralFolder({ gdrive, config }: ServicesAndConfig) {
+async function checkGDrive({ gdrive, config }: ServicesAndConfig) {
     const log = debug.extend('gdrive')
 
-    const folderAlreadyExists = await hasRootFolderFound({ gdrive })
-
-    if (folderAlreadyExists) {
-        log('GDrive root folder already exists.')
-        gdrive.rootFolderId = (await AppVar.query().findById(APP_VAR_KEYS.GDRIVE_ROOT_FOLDER)).value
-        return
-    }
-
-    log('No root folder found. Creating new one...')
-    // TODO может стоит сделать генерацию названия по текущей дате?..
-    const name = config.gdrive.rootDirName as string
-    const folder = await gdrive.createFolder(name)
-
-    await transaction(AppVar.knex(), async (tx) => {
-        await AppVar.query(tx).deleteById(APP_VAR_KEYS.GDRIVE_ROOT_FOLDER)
-
-        await AppVar.query(tx).insert({
-            key: APP_VAR_KEYS.GDRIVE_ROOT_FOLDER,
-            value: folder.id
-        })
-    })
-
-    log('GDrive folder setup: %j', folder)
-    gdrive.rootFolderId = folder.id
-
-    return
-}
-
-async function hasRootFolderFound({ gdrive }: Partial<ServicesAndConfig>): Promise<boolean> {
-    const folderIdOrNull = await AppVar.query().findById(APP_VAR_KEYS.GDRIVE_ROOT_FOLDER)
-
-    if (!folderIdOrNull) return false
-
     try {
-        const { data } = await gdrive.drive.files.get({ fileId: folderIdOrNull.value })
-        return data.mimeType === GDRIVE_FOLDER_MIME
+        await gdrive.checkOperational()
+        log('GDrive operational.')
     } catch (e) {
-        // Если папка не существует, значит у нас тупо битый id
-        if (e.code === 404) return false
-
-        // Иначе у нас неожиданная ошибка, которую надо бы выбросить
-        throw e
+        log('GDrive is not operational')
+        captureException(e)
     }
 }
 
