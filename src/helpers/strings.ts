@@ -12,7 +12,38 @@ export function __(key: string, data?: { [key: string]: string }) {
     return format(source || key, data)
 }
 
-export const strings = {
+
+type InstrumentedStringTree<T> = {
+    [P in keyof T]: T[P] extends string ? (values?: { [key: string]: string }) => string : InstrumentedStringTree<T[P]>
+}
+
+type StringTree = {
+    [key: string]: string | StringTree
+}
+
+function instrumentWithVars<T extends StringTree>(src: T) {
+    let result = {}
+
+    for (let key of Object.keys(src)) {
+        const source = src[key]
+
+        if (typeof source === 'string') {
+            result[key] = (data?: { [key: string]: string }) => {
+                if (key.endsWith('__html')) {
+                    data = lodash.mapValues(data, (val) => lodash.escape(val))
+                }
+
+                return format(source || key, data)
+            }
+        } else {
+            result[key] = instrumentWithVars(source)
+        }
+    }
+
+    return result as InstrumentedStringTree<T>
+}
+
+const strings = {
     system: {
         accessDenied: 'Я не знаю такую команду...'
     },
@@ -106,3 +137,5 @@ export const strings = {
         notText: 'К сожалению, я не понимаю. Введите значение текстом'
     }
 }
+
+export default instrumentWithVars(strings)
