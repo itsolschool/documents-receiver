@@ -49,26 +49,16 @@ export default class GDriveService {
         return `https://drive.google.com/open?id=${fileId}`
     }
 
-    async checkOperational(): Promise<boolean> {
-        const fileMeta = {
-            name: 'SERVICE OPERATIONAL INDICATOR',
-            parents: [this.rootFolderId]
-        }
-        const media = {
-            mimeType: 'text/plain',
-            body: 'Этот файл нужно удалить руками, раз сам не удалился :('
-        }
+    async checkOperational(): Promise<true> {
+        const {
+            data: { mimeType, capabilities }
+        } = await this.drive.files.get({ fileId: this.rootFolderId, fields: 'capabilities,mimeType' })
 
-        const response = await this.drive.files.create({
-            requestBody: fileMeta,
-            media,
-            fields: 'id'
-        })
-
-        await this.drive.files.get({ fileId: response.data.id })
-        await this.drive.files.delete({
-            fileId: response.data.id
-        })
+        console.assert(mimeType === GDRIVE_FOLDER_MIME, 'Provided rootDir is not a folder')
+        console.assert(
+            capabilities.canAddChildren && capabilities.canRemoveChildren,
+            'Editor rights should be provided to Service Account'
+        )
 
         return true
     }
