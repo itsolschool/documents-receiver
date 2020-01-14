@@ -130,7 +130,7 @@ async function handleGDriveUpload(
         const {
             data: { id: newFileId }
         } = await gdrivePromise
-        const gdriveAccessUrl = `https://drive.google.com/open?id=${newFileId}`
+        const gdriveAccessUrl = ctx.gdrive.getLinkForFile(newFileId)
 
         const { id: trelloAttachId } = await ctx.trello.post({
             path: trelloAttachmentsPath,

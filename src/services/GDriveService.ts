@@ -1,6 +1,6 @@
 import { drive_v3, google } from 'googleapis'
-import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client'
-import { Credentials } from 'google-auth-library/build/src/auth/credentials'
+import { Credentials, JWTInput } from 'google-auth-library/build/src/auth/credentials'
+import { JWT } from 'google-auth-library/build/src/auth/jwtclient'
 import Team from '../models/Team'
 import { escape } from 'lodash'
 import Drive = drive_v3.Drive
@@ -24,48 +24,36 @@ export type OAuthClientSettings = {
 }
 
 export default class GDriveService {
-    public readonly drive!: Drive
-    private readonly authClient!: OAuth2Client
+    readonly drive: Drive
+    readonly rootFolderId: string
+    readonly authorized: Promise<true>
+    private readonly _authClient: JWT
 
-    constructor(creds: OAuthClientSettings) {
-        const { client_secret, client_id, redirect_uris } = creds.installed
-        this.authClient = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
+    constructor(creds: JWTInput, rootFolderId: string) {
+        this.rootFolderId = rootFolderId
 
-        this.drive = google.drive({ version: 'v3', auth: this.authClient })
-    }
-
-    private _rootFolderId: string | void
-
-    get rootFolderId(): string {
-        if (typeof this._rootFolderId === 'string') return this._rootFolderId
-        throw TypeError('Root folder id should be initialized before using')
-    }
-
-    set rootFolderId(folderId: string) {
-        this._rootFolderId = folderId
-    }
-
-    setCredentials(credentials: Credentials) {
-        this.authClient.setCredentials(credentials)
-    }
-
-    getNewAuthUrl() {
-        return this.authClient.generateAuthUrl({
-            access_type: 'offline',
-            scope: SCOPES
+        this._authClient = new google.auth.JWT({
+            scopes: SCOPES
         })
+        this._authClient.fromJSON(creds)
+        this.authorized = this._authClient.authorize().then(() => true)
+
+        this.drive = google.drive({ version: 'v3', auth: this._authClient })
     }
 
-    async getCredentialsByCode(code: string): Promise<Credentials> {
-        const credsResponse = await this.authClient.getToken(code)
-        this.authClient.setCredentials(credsResponse.tokens)
-        return credsResponse.tokens
-        // this.authClient.setCredentials(creds);
+
+    get serviceAccountEmail(): string {
+        return this._authClient.email
+    }
+
+    getLinkForFile(fileId: string): string {
+        return `https://drive.google.com/open?id=${fileId}`
     }
 
     async checkOperational(): Promise<boolean> {
         const fileMeta = {
-            name: 'SERVICE OPERATIONAL INDICATOR'
+            name: 'SERVICE OPERATIONAL INDICATOR',
+            parents: [this.rootFolderId]
         }
         const media = {
             mimeType: 'text/plain',
