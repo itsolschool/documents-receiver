@@ -35,7 +35,6 @@ async function replyWithMainView(ctx: ContextMessageUpdate) {
 
 export default scene
 
-
 async function gdriveHealthcheck(ctx: ContextMessageUpdate) {
     const { gdrive } = ctx
 
