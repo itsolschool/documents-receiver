@@ -11,17 +11,7 @@ export const GDRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder'
 
 const SCOPES = ['https://www.googleapis.com/auth/drive']
 
-export type OAuthClientSettings = {
-    installed: {
-        client_id: string
-        project_id: string
-        auth_uri: string
-        token_uri: string
-        auth_provider_x509_cert_url: string
-        client_secret: string
-        redirect_uris: string[]
-    }
-}
+type FolderParams = Exclude<Schema$File, 'mimeType' | 'name'>
 
 export default class GDriveService {
     readonly drive: Drive
@@ -63,15 +53,20 @@ export default class GDriveService {
         return true
     }
 
-    async createFolder(name: string, parents?: string[]): Promise<Schema$File> {
-        const requestBody = { name, mimeType: GDRIVE_FOLDER_MIME, parents }
+    async createFolder(name: string, props?: FolderParams): Promise<Schema$File> {
+        const requestBody = { name, mimeType: GDRIVE_FOLDER_MIME, ...props }
 
         const { data } = await this.drive.files.create({ requestBody })
         return data
     }
 
     async createFolderForTeam(team: Team): Promise<void> {
-        const folder = await this.createFolder(escape(team.represent), [this.rootFolderId])
+        const folder = await this.createFolder(escape(team.represent), {
+            parents: [this.rootFolderId],
+            properties: {
+                ITSS_team_id: team.$id().toString()
+            }
+        })
         await Team.query()
             .findById(team.$id())
             .patch({ gdriveFolderId: folder.id })
