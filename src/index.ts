@@ -61,12 +61,12 @@ async function setupBot() {
     })
 
 
-    const gdriveSecret = JSON.parse(process.env.GDRIVE_OAUTH2_SECRET)
+    const gdriveServiceAccount = JSON.parse(process.env.GDRIVE_SERVICE_ACCOUNT)
 
     bindConfig(bot, config)
 
     const redis = bindSession(bot, process.env.REDIS_URL)
-    const gdrive = await bindGDrive(bot, gdriveSecret)
+    const gdrive = await bindGDrive(bot, gdriveServiceAccount, config.gdrive.rootDirId)
     const trello = await bindTrello(bot, process.env.TRELLO_TOKEN_SECRET)
 
     bot.use(sentryExtraFromCtx('session'))

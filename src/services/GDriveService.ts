@@ -41,7 +41,6 @@ export default class GDriveService {
         this.drive = google.drive({ version: 'v3', auth: this._authClient })
     }
 
-
     get serviceAccountEmail(): string {
         return this._authClient.email
     }

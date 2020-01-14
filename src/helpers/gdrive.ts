@@ -1,19 +1,15 @@
 import Telegraf, { ContextMessageUpdate } from 'telegraf'
-import GDriveService, { OAuthClientSettings } from '../services/GDriveService'
-import AppVar, { APP_VAR_KEYS } from '../models/AppVar'
+import GDriveService from '../services/GDriveService'
+import { JWTInput } from 'google-auth-library/build/src/auth/credentials'
 
 const debug = require('debug')('bot:context:gdrive')
 
-export async function bindGDrive<T extends ContextMessageUpdate>(bot: Telegraf<T>, settings: OAuthClientSettings) {
-    const gdrive = new GDriveService(settings)
-
-    let token = await AppVar.query().findById(APP_VAR_KEYS.GDRIVE_ACCESS_TOKEN)
-    if (token) {
-        debug('Use saved GDrive access token.')
-        gdrive.setCredentials(JSON.parse(token.value))
-    } else {
-        debug("No access token for GDrive found. Use 'anonymous' state.")
-    }
+export async function bindGDrive<T extends ContextMessageUpdate>(
+    bot: Telegraf<T>,
+    settings: JWTInput,
+    rootFolderId: string
+) {
+    const gdrive = new GDriveService(settings, rootFolderId)
 
     bot.use((ctx, next) => {
         ctx.gdrive = gdrive
@@ -21,6 +17,10 @@ export async function bindGDrive<T extends ContextMessageUpdate>(bot: Telegraf<T
     })
 
     debug('GDrive attached to Context.')
+
+    await gdrive.authorized
+
+    debug('GDrive authorized.')
 
     return gdrive
 }
