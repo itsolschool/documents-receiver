@@ -4,5 +4,6 @@
     "connection": {
       "filename": "./dev.sqlite3"
     }
-  }
+  },
+  "redis": null
 }
