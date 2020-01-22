@@ -1,0 +1,22 @@
+{
+  "server": {
+    "port": "PORT"
+  },
+  "telegram": {
+    "token": "TG_BOT_TOKEN",
+    "webhook": "WEBHOOK_URL"
+  },
+  "gdrive": {
+    "serviceAccount": {
+      "__name": "GDRIVE_SERVICE_ACCOUNT",
+      "__format": "json"
+    }
+  },
+  "trello": {
+    "appKey:token": "TRELLO_TOKEN_SECRET"
+  },
+  "sentry": {
+    "dsn": "SENTRY_DSN"
+  },
+  "redis": "REDIS_URL"
+}
