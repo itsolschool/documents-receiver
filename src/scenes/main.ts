@@ -37,6 +37,7 @@ export default scene
 
 async function gdriveHealthcheck(ctx: ContextMessageUpdate) {
     const { gdrive } = ctx
+    const emptyInlineMessageId = undefined
 
     const statusMessage = await ctx.reply(`${WHITE_QUESTION_MARK} GDrive checking...`)
     try {
@@ -44,14 +45,14 @@ async function gdriveHealthcheck(ctx: ContextMessageUpdate) {
         await ctx.telegram.editMessageText(
             ctx.chat.id,
             statusMessage.message_id,
-            undefined,
+            emptyInlineMessageId,
             `${GREEN_MARK} GDrive operational`
         )
     } catch (e) {
         await ctx.telegram.editMessageText(
             ctx.chat.id,
             statusMessage.message_id,
-            undefined,
+            emptyInlineMessageId,
             `${RED_CROSS} GDrive FAILED\n${e}`
         )
 
