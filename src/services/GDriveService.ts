@@ -1,6 +1,6 @@
 import { drive_v3, google } from 'googleapis'
-import { OAuth2Client } from 'google-auth-library/build/src/auth/oauth2client'
-import { Credentials } from 'google-auth-library/build/src/auth/credentials'
+import { Credentials, JWTInput } from 'google-auth-library/build/src/auth/credentials'
+import { JWT } from 'google-auth-library/build/src/auth/jwtclient'
 import Team from '../models/Team'
 import { escape } from 'lodash'
 import Drive = drive_v3.Drive
@@ -11,90 +11,62 @@ export const GDRIVE_FOLDER_MIME = 'application/vnd.google-apps.folder'
 
 const SCOPES = ['https://www.googleapis.com/auth/drive']
 
-export type OAuthClientSettings = {
-    installed: {
-        client_id: string
-        project_id: string
-        auth_uri: string
-        token_uri: string
-        auth_provider_x509_cert_url: string
-        client_secret: string
-        redirect_uris: string[]
-    }
-}
+type FolderParams = Exclude<Schema$File, 'mimeType' | 'name'>
 
 export default class GDriveService {
-    public readonly drive!: Drive
-    private readonly authClient!: OAuth2Client
+    readonly drive: Drive
+    readonly rootFolderId: string
+    readonly authorized: Promise<true>
+    private readonly _authClient: JWT
 
-    constructor(creds: OAuthClientSettings) {
-        const { client_secret, client_id, redirect_uris } = creds.installed
-        this.authClient = new google.auth.OAuth2(client_id, client_secret, redirect_uris[0])
+    constructor(creds: JWTInput, rootFolderId: string) {
+        this.rootFolderId = rootFolderId
 
-        this.drive = google.drive({ version: 'v3', auth: this.authClient })
-    }
-
-    private _rootFolderId: string | void
-
-    get rootFolderId(): string {
-        if (typeof this._rootFolderId === 'string') return this._rootFolderId
-        throw TypeError('Root folder id should be initialized before using')
-    }
-
-    set rootFolderId(folderId: string) {
-        this._rootFolderId = folderId
-    }
-
-    setCredentials(credentials: Credentials) {
-        this.authClient.setCredentials(credentials)
-    }
-
-    getNewAuthUrl() {
-        return this.authClient.generateAuthUrl({
-            access_type: 'offline',
-            scope: SCOPES
+        this._authClient = new google.auth.JWT({
+            scopes: SCOPES
         })
+        this._authClient.fromJSON(creds)
+        this.authorized = this._authClient.authorize().then(() => true)
+
+        this.drive = google.drive({ version: 'v3', auth: this._authClient })
     }
 
-    async getCredentialsByCode(code: string): Promise<Credentials> {
-        const credsResponse = await this.authClient.getToken(code)
-        this.authClient.setCredentials(credsResponse.tokens)
-        return credsResponse.tokens
-        // this.authClient.setCredentials(creds);
+    get serviceAccountEmail(): string {
+        return this._authClient.email
     }
 
-    async checkOperational(): Promise<boolean> {
-        const fileMeta = {
-            name: 'SERVICE OPERATIONAL INDICATOR'
-        }
-        const media = {
-            mimeType: 'text/plain',
-            body: 'Этот файл нужно удалить руками, раз сам не удалился :('
-        }
+    getLinkForFile(fileId: string): string {
+        return `https://drive.google.com/open?id=${fileId}`
+    }
 
-        const response = await this.drive.files.create({
-            requestBody: fileMeta,
-            media,
-            fields: 'id'
-        })
+    async checkOperational(): Promise<true> {
+        const {
+            data: { mimeType, capabilities }
+        } = await this.drive.files.get({ fileId: this.rootFolderId, fields: 'capabilities,mimeType' })
 
-        await this.drive.files.get({ fileId: response.data.id })
-        await this.drive.files.delete({
-            fileId: response.data.id
-        })
+        console.assert(mimeType === GDRIVE_FOLDER_MIME, 'Provided rootDir is not a folder')
+        console.assert(
+            capabilities.canAddChildren && capabilities.canRemoveChildren,
+            'Editor rights should be provided to Service Account'
+        )
 
         return true
     }
 
-    async createFolder(name: string, parents?: string[]): Promise<Schema$File> {
-        const requestBody = { name, mimeType: GDRIVE_FOLDER_MIME, parents }
+    async createFolder(name: string, props?: FolderParams): Promise<Schema$File> {
+        const requestBody = { name, mimeType: GDRIVE_FOLDER_MIME, ...props }
 
         const { data } = await this.drive.files.create({ requestBody })
         return data
     }
 
     async createFolderForTeam(team: Team): Promise<void> {
-        const folder = await this.createFolder(escape(team.represent), [this.rootFolderId])
+        const folder = await this.createFolder(escape(team.represent), {
+            parents: [this.rootFolderId],
+            properties: {
+                ITSS_team_id: team.$id().toString()
+            }
+        })
         await Team.query()
             .findById(team.$id())
             .patch({ gdriveFolderId: folder.id })

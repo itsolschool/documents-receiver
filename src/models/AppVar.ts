@@ -19,7 +19,5 @@ export default class AppVar extends Model {
 
 export enum APP_VAR_KEYS {
     TRELLO_TOKEN = 'TRELLO/token',
-    TRELLO_SPAWN_LIST_ID = 'TRELLO/spawnListId',
-    GDRIVE_ACCESS_TOKEN = 'GDRIVE/accessToken',
-    GDRIVE_ROOT_FOLDER = 'GDRIVE/rootFolder'
+    TRELLO_SPAWN_LIST_ID = 'TRELLO/spawnListId'
 }

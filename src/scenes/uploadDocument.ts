@@ -90,10 +90,12 @@ const milestoneSelector = Composer.action(/^selMile(\d+)$/, async (ctx) => {
 })
 
 async function handleGDriveUpload(
-    ctx: ContextMessageUpdate,
+    ctx: Exclude<ContextMessageUpdate, 'user'>,
     { gdriveFileId, teamId, milestoneId }: { gdriveFileId?: string; teamId: number; milestoneId: number }
 ): Promise<any> {
     const progressMessage = await ctx.reply(__('uploadDocument.uploadProgress'))
+
+    const team = await Team.query().findById(teamId)
 
     const teamMilestoneDocuments = Document.query().where({
         teamId,
@@ -107,9 +109,12 @@ async function handleGDriveUpload(
         milestoneTitle: ctx.config.milestones[milestoneId],
         milestoneNum: milestoneId + 1
     })
-    const resource = {
+    const resource: Schema$File = {
         name,
-        parents: [ctx.user.team.gdriveFolderId]
+        parents: [team.gdriveFolderId],
+        properties: {
+            ITSS_team_id: teamId.toString()
+        }
     }
 
     let gdrivePromise
@@ -123,14 +128,14 @@ async function handleGDriveUpload(
         }
         gdrivePromise = ctx.gdrive.drive.files.create({ requestBody: resource, media, fields: 'id' })
     }
-    const trelloAttachmentsPath = `/1/cards/${ctx.user.team.trelloCardId}/attachments`
+    const trelloAttachmentsPath = `/1/cards/${team.trelloCardId}/attachments`
 
     let insertedDocument
     try {
         const {
             data: { id: newFileId }
         } = await gdrivePromise
-        const gdriveAccessUrl = `https://drive.google.com/open?id=${newFileId}`
+        const gdriveAccessUrl = ctx.gdrive.getLinkForFile(newFileId)
 
         const { id: trelloAttachId } = await ctx.trello.post({
             path: trelloAttachmentsPath,

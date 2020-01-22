@@ -43,16 +43,15 @@ export const strings = {
 /cancel - всегда вернёт в главное меню`,
         btns: {
             addTeam: 'Создать команду',
-            setupGDrive: 'WIP: Авторизовать GDrive',
-            healthcheck: 'Состояние',
+            gdriveHealthcheck: 'Состояние GDrive',
             uploadDocuments: 'Загрузить документ'
         }
     },
     gdrive: {
-        askForToken: `
-После авторизации и получения доступа, скопируйте специальный код и\ 
-отправьте его сюда.`,
-        ok: 'Google Диск подключен!'
+        shareDir__html: `В файле general.json указан id папки. Предоставьте к ней доступ:\n<code>{email}</code>`,
+        btns: {
+            openDirLink: `Открыть папку браузере`
+        }
     },
     init: {
         trello: {

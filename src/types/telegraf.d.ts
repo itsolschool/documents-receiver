@@ -11,7 +11,7 @@ import TrelloService from '../services/TrelloService'
 declare module 'telegraf' {
     export type BotConfig = {
         gdrive: {
-            rootDirName: string
+            rootDirId: string
         }
         trello: {
             boardId: string
