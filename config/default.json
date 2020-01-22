@@ -36,5 +36,6 @@
   "sentry": {
     "dsn": "!! FROM ENV !!"
   },
-  "redis": "!! FROM ENV !!"
+  "redis": "!! FROM ENV !!",
+  "database": "!! EXTENDED !!"
 }

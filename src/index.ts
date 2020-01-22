@@ -24,7 +24,7 @@ Sentry.init({ dsn: config.sentry.dsn })
 
 async function setupDb() {
     const knex = Knex({
-        ...require('../knexfile.js')[process.env.NODE_ENV || 'development'],
+        ...config.database,
         ...knexSnakeCaseMappers()
     })
     Model.knex(knex)

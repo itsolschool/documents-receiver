@@ -1,0 +1,13 @@
+{
+  "database": {
+    "client": "postgresql",
+    "connection": "!! FROM ENV !!",
+    "pool": {
+      "min": 2,
+      "max": 10
+    },
+    "migrations": {
+      "tableName": "knex_migrations"
+    }
+  }
+}

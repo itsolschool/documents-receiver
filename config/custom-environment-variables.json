@@ -18,5 +18,8 @@
   "sentry": {
     "dsn": "SENTRY_DSN"
   },
-  "redis": "REDIS_URL"
+  "redis": "REDIS_URL",
+  "database": {
+    "connection": "DATABASE_URL"
+  }
 }
