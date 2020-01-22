@@ -104,7 +104,7 @@ async function handleGDriveUpload(
 
     const currentDocumentsCount = await teamMilestoneDocuments.resultSize()
 
-    const name = format(ctx.config.fileMask, {
+    const name = format(ctx.config.upload.fileMask, {
         versionNumber: currentDocumentsCount + 1,
         milestoneTitle: ctx.config.milestones[milestoneId],
         milestoneNum: milestoneId + 1
@@ -203,7 +203,7 @@ const fileGetter = new Composer()
             throw e
         }
 
-        if (!ctx.config.allowedMIMEs.includes(file.mimeType)) {
+        if (!ctx.config.upload.allowedMIMEs.includes(file.mimeType)) {
             return ctx.reply(__('uploadDocument.wrongFileType'))
         }
 
@@ -215,7 +215,7 @@ const fileGetter = new Composer()
         return ctx.scene.enter(SCENE.MAIN)
     })
     .on('document', async (ctx) => {
-        const allowedFile = ctx.config.allowedMIMEs.includes(ctx.message.document.mime_type)
+        const allowedFile = ctx.config.upload.allowedMIMEs.includes(ctx.message.document.mime_type)
         if (!allowedFile) {
             return ctx.reply(__('uploadDocument.wrongFileType'))
         }

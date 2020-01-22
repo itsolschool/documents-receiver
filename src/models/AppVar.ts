@@ -18,6 +18,5 @@ export default class AppVar extends Model {
 }
 
 export enum APP_VAR_KEYS {
-    TRELLO_TOKEN = 'TRELLO/token',
     TRELLO_SPAWN_LIST_ID = 'TRELLO/spawnListId'
 }

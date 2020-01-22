@@ -1,7 +1,6 @@
 import Knex from 'knex'
 import { knexSnakeCaseMappers, Model } from 'objection'
-import * as path from 'path'
-import Telegraf, { BotConfig } from 'telegraf'
+import Telegraf from 'telegraf'
 import * as Sentry from '@sentry/node'
 import { captureException, configureScope } from '@sentry/node'
 import * as url from 'url'
@@ -16,11 +15,12 @@ import bindConfig from './helpers/bindConfig'
 import { setupReferralMiddleware } from './middlewares/referralMiddleware'
 import sentryExtraFromCtx from './helpers/sentryExtraFromCtx'
 import User from './models/User'
+import { BotConfig } from 'bot-config'
 
-const config: BotConfig = require(path.resolve(__dirname, '../config/general.json'))
+const config = require('config') as BotConfig
 const debug = require('debug')('bot')
 
-Sentry.init({ dsn: process.env.SENTRY_DSN })
+Sentry.init({ dsn: config.sentry.dsn })
 
 async function setupDb() {
     const knex = Knex({
@@ -34,7 +34,7 @@ async function setupDb() {
 }
 
 async function setupBot() {
-    const bot = new Telegraf(process.env.TG_BOT_TOKEN)
+    const bot = new Telegraf(config.telegram.token)
 
     bot.use(async (ctx, next) => {
         configureScope((scope) => {
@@ -61,13 +61,13 @@ async function setupBot() {
     })
 
 
-    const gdriveServiceAccount = JSON.parse(process.env.GDRIVE_SERVICE_ACCOUNT)
+    const gdriveServiceAccount = config.gdrive.serviceAccount
 
     bindConfig(bot, config)
 
-    const redis = bindSession(bot, process.env.REDIS_URL)
+    const redis = bindSession(bot, config.redis)
     const gdrive = await bindGDrive(bot, gdriveServiceAccount, config.gdrive.rootDirId)
-    const trello = await bindTrello(bot, process.env.TRELLO_TOKEN_SECRET)
+    const trello = await bindTrello(bot, config.trello['appKey:token'])
 
     bot.use(sentryExtraFromCtx('session'))
 
@@ -78,14 +78,14 @@ async function setupBot() {
     // Теперь так делать нельзя
     bot.telegram.webhookReply = false
 
-    if (!process.env.WEBHOOK_URL) {
+    if (!config.telegram.webhook) {
         await bot.telegram.deleteWebhook()
         bot.startPolling()
         debug('Bot started with Longpolling')
     } else {
-        const webhook = new url.URL(process.env.WEBHOOK_URL)
+        const webhook = new url.URL(config.telegram.webhook)
         await bot.telegram.setWebhook(webhook.href)
-        bot.startWebhook(webhook.pathname, null, +process.env.PORT)
+        bot.startWebhook(webhook.pathname, null, config.server.port)
         debug('Bot started with WebHook on ' + webhook.href)
     }
 
