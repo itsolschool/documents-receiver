@@ -25,7 +25,7 @@ declare module 'bot-config' {
             /**
              * Порт, на котором должен слушать webhook
              */
-            port: number
+            port: string
         }
         telegram: {
             /**

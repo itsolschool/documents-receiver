@@ -85,7 +85,7 @@ async function setupBot() {
     } else {
         const webhook = new url.URL(config.telegram.webhook)
         await bot.telegram.setWebhook(webhook.href)
-        bot.startWebhook(webhook.pathname, null, config.server.port)
+        bot.startWebhook(webhook.pathname, null, +config.server.port)
         debug('Bot started with WebHook on ' + webhook.href)
     }
 
