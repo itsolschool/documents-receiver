@@ -32,7 +32,7 @@
     "url-regex": "^5.0.0"
   },
   "scripts": {
-    "lint": "prettier --write src/**/*.ts migrations/*.js",
+    "lint": "prettier --write src/**/*.ts src/*.ts migrations/*.js",
     "build": "tsc"
   },
   "husky": {

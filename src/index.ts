@@ -56,17 +56,13 @@ async function setupBot() {
     // TODO удалить потом эту команду
     bot.command('skidoo', async (ctx) => {
         await ctx.reply(`Вы изгнаны из команды ${ctx.user?.team.name}`)
-        if (ctx.user)
-            await User.query().deleteById(ctx.user.$id())
+        if (ctx.user) await User.query().deleteById(ctx.user.$id())
     })
-
-
-    const gdriveServiceAccount = config.gdrive.serviceAccount
 
     bindConfig(bot, config)
 
     const redis = bindSession(bot, config.redis)
-    const gdrive = await bindGDrive(bot, gdriveServiceAccount, config.gdrive.rootDirId)
+    const gdrive = await bindGDrive(bot, config.gdrive.serviceAccount, config.gdrive.rootDirId)
     const trello = await bindTrello(bot, config.trello['appKey:token'])
 
     bot.use(sentryExtraFromCtx('session'))
