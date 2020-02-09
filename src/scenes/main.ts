@@ -18,12 +18,14 @@ scene
     .action(ACTIONS.HEALTH_CHECK, checkUserIsAdmin, removeActions, gdriveHealthcheck)
     .use(replyWithMainView)
 
-
 async function replyWithMainView(ctx: ContextMessageUpdate) {
     if (ctx.user.team.isAdmin) {
         // @ts-ignore -- потому что telegraf хочет кнопки только одного типа
         const ADMIN_MARKUP = Markup.inlineKeyboard([
-            [Markup.callbackButton(__('main.btns.addTeam'), ACTIONS.CREATE_TEAM), Markup.callbackButton(__('main.btns.uploadDocuments'), ACTIONS.UPLOAD_DOCUMENT)],
+            [
+                Markup.callbackButton(__('main.btns.addTeam'), ACTIONS.CREATE_TEAM),
+                Markup.callbackButton(__('main.btns.uploadDocuments'), ACTIONS.UPLOAD_DOCUMENT)
+            ],
             [Markup.callbackButton(__('main.btns.gdriveHealthcheck'), ACTIONS.HEALTH_CHECK)],
             [Markup.urlButton('GDrive', ctx.gdrive.getLinkForFile(ctx.config.gdrive.rootDirId))]
         ])
@@ -33,7 +35,8 @@ async function replyWithMainView(ctx: ContextMessageUpdate) {
         return ctx.reply(__('main.admin'), ADMIN_MARKUP)
     } else {
         //@ts-ignore -- опять только кнопки одного типа
-        const USER_MARKUP = Markup.inlineKeyboard([[Markup.callbackButton(__('main.btns.uploadDocuments'), ACTIONS.UPLOAD_DOCUMENT)],
+        const USER_MARKUP = Markup.inlineKeyboard([
+            [Markup.callbackButton(__('main.btns.uploadDocuments'), ACTIONS.UPLOAD_DOCUMENT)],
             [Markup.urlButton(__('main.btns.uploadedFiles'), ctx.gdrive.getLinkForFile(ctx.user.team.gdriveFolderId))]
         ])
             .oneTime(true)
