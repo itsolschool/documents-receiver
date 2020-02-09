@@ -18,8 +18,9 @@ export function __(key: string, data?: { [key: string]: string }) {
     return format(source || key, data)
 }
 
+type TemplateProcessor = (values?: { [key: string]: string }) => string
 type InstrumentedStringTree<T> = {
-    [P in keyof T]: T[P] extends string ? (values?: { [key: string]: string }) => string : InstrumentedStringTree<T[P]>
+    [P in keyof T]: T[P] extends string ? TemplateProcessor : InstrumentedStringTree<T[P]>
 }
 
 type StringTree = {
