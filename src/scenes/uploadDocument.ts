@@ -128,6 +128,7 @@ async function handleGDriveUpload(
         }
         gdrivePromise = ctx.gdrive.drive.files.create({ requestBody: resource, media, fields: 'id' })
     }
+
     const trelloAttachmentsPath = `/1/cards/${team.trelloCardId}/attachments`
 
     let insertedDocument
@@ -159,12 +160,16 @@ async function handleGDriveUpload(
         throw e
     }
 
+    const groupFolderLink = ctx.gdrive.getLinkForFile(team.gdriveFolderId)
+    const markup = Markup.inlineKeyboard([
+        Markup.urlButton(__('uploadDocument.successUploadingGDriveLink'), groupFolderLink)
+    ])
     await ctx.telegram.editMessageText(
         ctx.chat.id,
         progressMessage.message_id,
         undefined,
         __('uploadDocument.successUploading__html', { filename: name }),
-        Extra.HTML(true) as ExtraEditMessage
+        Extra.markup(markup).HTML(true) as ExtraEditMessage
     )
 
     await transaction(Document.knex(), async (tx) => {

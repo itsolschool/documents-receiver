@@ -99,7 +99,8 @@ export const strings = {
         wrongFileType: `Я не могу загружать файлы в этом формате. Я могу только в PDF, документы и презентации. Переведи в другой формат и попробуй ещё разок`,
         uploadProgress: `${WHITE_QUESTION_MARK} Загружаю документ...`,
         errorUploading: `${RED_CROSS} К сожалению произошла ошибка.\nПопробуй загрузить документ попозже`,
-        successUploading__html: `${GREEN_MARK} Я загрузил: <code>{filename}</code>`
+        successUploading__html: `${GREEN_MARK} Я загрузил: <code>{filename}</code>`,
+        successUploadingGDriveLink: `Загруженные документы`
     },
     errors: {
         notText: 'К сожалению, я не понимаю. Введите значение текстом'
