@@ -161,15 +161,15 @@ async function handleGDriveUpload(
     }
 
     const groupFolderLink = ctx.gdrive.getLinkForFile(team.gdriveFolderId)
-    const markup = Markup.inlineKeyboard([
-        Markup.urlButton(__('uploadDocument.successUploadingGDriveLink'), groupFolderLink)
-    ])
     await ctx.telegram.editMessageText(
         ctx.chat.id,
         progressMessage.message_id,
         undefined,
-        __('uploadDocument.successUploading__html', { filename: name }),
-        Extra.markup(markup).HTML(true) as ExtraEditMessage
+        __('uploadDocument.successUploading__html', {
+            filename: ctx.config.milestones[milestoneId],
+            folderLink: groupFolderLink
+        }),
+        Extra.HTML(true) as ExtraEditMessage
     )
 
     await transaction(Document.knex(), async (tx) => {
