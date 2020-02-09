@@ -74,14 +74,15 @@ const strings = {
         admin: `Можно создавать команды.
         
 /cancel - всегда вернёт в главное меню`,
-        user__html: `Твоя команда - <b>{team}</b>
+        user: `Твоя команда - {team}
 Ты можешь загрузить новые документы, или перезагрузить старые.
 
 /cancel - всегда вернёт в главное меню`,
         btns: {
             addTeam: 'Создать команду',
             gdriveHealthcheck: 'Состояние GDrive',
-            uploadDocuments: 'Загрузить документ'
+            uploadDocuments: 'Загрузить документ',
+            uploadedFiles: 'Загруженные документы'
         }
     },
     gdrive: {
@@ -119,9 +120,9 @@ const strings = {
     },
     uploadDocument: {
         askTeam: 'От имени какой команды надо загрузить?',
-        teamChosen__html: 'От имени команды <code>{team}</code>',
+        teamChosen__html: 'От имени команды <i>{team}</i>',
         askMilestone: `Какой файл ты хочешь загрузить?`,
-        milestoneChosen__html: `Ну хорошо. Значит загружаем <code>{milestone}</code>`,
+        milestoneChosen__html: `Ну хорошо. Значит загружаем <i>{milestone}</i>`,
         askDocument: `Теперь нужна ссылка на Google Документ или файл на Google Диске.
       
 Принимаются:
@@ -136,7 +137,11 @@ const strings = {
         wrongFileType: `Я не могу загружать файлы в этом формате. Я могу только в PDF, документы и презентации. Переведи в другой формат и попробуй ещё разок`,
         uploadProgress: `${WHITE_QUESTION_MARK} Загружаю документ...`,
         errorUploading: `${RED_CROSS} К сожалению произошла ошибка.\nПопробуй загрузить документ попозже`,
-        successUploading__html: `${GREEN_MARK} Я загрузил: <code>{filename}</code>`
+        successUploading__html: `
+${GREEN_MARK} Я загрузил: <i>{filename}</i>.
+
+Можешь посмотреть <a href="{folderLink}">остальные файлы</a>
+`
     },
     errors: {
         notText: 'К сожалению, я не понимаю. Введите значение текстом'
