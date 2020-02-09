@@ -3,24 +3,11 @@ import User from '../models/User'
 import GDriveService from '../services/GDriveService'
 import { Extra, Middleware, SceneContext, SceneContextMessageUpdate } from 'telegraf'
 import { RedisClient } from 'redis'
-
 import WizardContext from '../helpers/wizard/context'
-
 import TrelloService from '../services/TrelloService'
+import { BotConfig } from 'bot-config'
 
 declare module 'telegraf' {
-    export type BotConfig = {
-        gdrive: {
-            rootDirId: string
-        }
-        trello: {
-            boardId: string
-        }
-        milestones: string[]
-        allowedMIMEs: string[]
-        fileMask: string
-    }
-
     export class ContextMessageUpdate implements SceneContextMessageUpdate {
         redis: RedisClient
         config: BotConfig

@@ -5,7 +5,8 @@ import TrelloService from '../services/TrelloService'
 import { __ } from './strings'
 import { transaction } from 'objection'
 import { captureException } from '@sentry/node'
-import Telegraf, { BotConfig, ContextMessageUpdate } from 'telegraf'
+import { BotConfig } from 'bot-config'
+import Telegraf, { ContextMessageUpdate } from 'telegraf'
 
 const debug = require('debug')('bot:after')
 
