@@ -1,5 +1,5 @@
 import { WizardScene } from '../helpers/wizard'
-import { __ } from '../helpers/strings'
+import strings, { __ } from '../helpers/strings'
 import { CallbackButton, Composer, ContextMessageUpdate, Extra, Markup } from 'telegraf'
 import format from 'string-template'
 import { SCENE } from '../const/sceneId'
@@ -12,6 +12,10 @@ import * as url from 'url'
 import { transaction } from 'objection'
 import Team from '../models/Team'
 import Schema$File = drive_v3.Schema$File
+
+const phrases = strings.uploadDocument
+const feedbackPhrases = strings.feedback
+const feedbackUrl = 'https://forms.gle/LgQ9H13rNfTaxqCQ6'
 
 const TEAMS_PAGE_SIZE = 99 // + кнопки пагинации
 
@@ -236,9 +240,15 @@ const scene = new WizardScene(SCENE.UPLOAD_DOCUMENT, { cancelable: true }, teamS
 
 // TODO реализовать сцены без прелюдии. Поскольку в этом боте почти все сцены - формочки,
 // то надо бы сразу переходить к полям
-scene.enter((ctx, next) => {
-    return scene.middleware.call(scene)(ctx, next)
-})
+scene
+    .enter((ctx, next) => scene.middleware.call(scene)(ctx, next))
+    .leave(async (ctx, next) => {
+        await ctx.reply(
+            feedbackPhrases.ask(),
+            Markup.inlineKeyboard([Markup.urlButton(feedbackPhrases.btn(), feedbackUrl)]).extra()
+        )
+        return next()
+    })
 
 export default scene
 
