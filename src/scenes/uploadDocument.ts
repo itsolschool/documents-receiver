@@ -241,15 +241,17 @@ const scene = new WizardScene(SCENE.UPLOAD_DOCUMENT, { cancelable: true }, teamS
 
 // TODO реализовать сцены без прелюдии. Поскольку в этом боте почти все сцены - формочки,
 // то надо бы сразу переходить к полям
-scene
-    .enter((ctx, next) => scene.middleware.call(scene)(ctx, next))
-    .leave(async (ctx, next) => {
-        await ctx.reply(
-            feedbackPhrases.ask(),
-            Markup.inlineKeyboard([Markup.urlButton(feedbackPhrases.btn(), feedbackUrl)]).extra()
-        )
-        return next()
-    })
+scene.enter((ctx, next) => {
+    setTimeout(
+        () =>
+            ctx.reply(
+                feedbackPhrases.ask(),
+                Markup.inlineKeyboard([Markup.urlButton(feedbackPhrases.btn(), feedbackUrl)]).extra()
+            ),
+        15 * 60 * 60000 // 15 min
+    )
+    return scene.middleware.call(scene)(ctx, next)
+})
 
 export default scene
 
