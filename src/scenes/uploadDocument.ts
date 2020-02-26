@@ -224,6 +224,7 @@ const fileGetter = new Composer()
         return ctx.scene.enter(SCENE.MAIN)
     })
     .on('document', async (ctx) => {
+        return ctx.reply("Прошу прощения. Сейчас я могу принять только ссылки 😔")
         const allowedFile = ctx.config.upload.allowedMIMEs.includes(ctx.message.document.mime_type)
         if (!allowedFile) {
             return ctx.reply(__('uploadDocument.wrongFileType'))
