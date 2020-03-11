@@ -11,6 +11,7 @@ import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
 import * as url from 'url'
 import { transaction } from 'objection'
 import Team from '../models/Team'
+import { PassThrough } from 'stream'
 import Schema$File = drive_v3.Schema$File
 
 const phrases = strings.uploadDocument
@@ -128,7 +129,7 @@ async function handleGDriveUpload(
         const link = await ctx.telegram.getFileLink(ctx.message.document.file_id)
         const media = {
             mimeType: ctx.message.document.mime_type,
-            body: request(link)
+            body: request(link).pipe(new PassThrough())
         }
         gdrivePromise = ctx.gdrive.drive.files.create({ requestBody: resource, media, fields: 'id' })
     }
