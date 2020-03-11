@@ -1,10 +1,6 @@
-venv/
 dist/
-
 data/
-
-./dev.sqlite3
-
-./drive-python.json
-./drive-secret.json
-
+dev.sqlite3
+.idea/
+node_modules/
+config/local*
