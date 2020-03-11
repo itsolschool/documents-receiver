@@ -17,9 +17,10 @@
   "dependencies": {
     "@sentry/node": "5.10.2",
     "@types/bluebird": "^3.5.29",
+    "@types/request": "^2.48.4",
     "bluebird": "^3.7.1",
     "config": "^3.2.5",
-    "googleapis": "^45.0.0",
+    "googleapis": "^47.0.0",
     "knex": "^0.20.2",
     "lodash": "^4.17.15",
     "objection": "^1.6.11",
