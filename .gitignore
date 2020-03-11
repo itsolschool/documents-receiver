@@ -1,6 +1,8 @@
 venv/
 dist/
 
+data/
+
 ./dev.sqlite3
 
 ./drive-python.json
