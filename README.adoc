@@ -11,7 +11,7 @@ yarn  # Установка зависимостей
 yarn build  # Компиляция исходников
 ----
 
-Конфигурацию можно link:docs/config.adoc[*найти тут*].
+Описание конфигурации можно link:src/types/bot-config.d.ts[*найти тут*].
 
 [source,bash]
 ----
