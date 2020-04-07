@@ -62,7 +62,7 @@ async function setupBot() {
 
     bindConfig(bot, config)
 
-    const redis = bindSession(bot, config.redis)
+    const redis = await bindSession(bot, config.redis)
     const gdrive = await bindGDrive(bot, config.gdrive.serviceAccount, config.gdrive.rootDirId)
     const trello = await bindTrello(bot, config.trello['appKey:token'])
     const uploader = await bindUploader(bot, config, { gdrive, trello })
@@ -92,7 +92,8 @@ async function setupBot() {
         gdrive,
         trello,
         config,
-        bot
+        bot,
+        uploader
     }
     return boundServices
 }

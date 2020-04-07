@@ -9,7 +9,7 @@ const debug = require('debug')('bot:context:gdrive')
 export async function bindUploader<T extends ContextMessageUpdate>(
     bot: Telegraf<T>,
     config: BotConfig,
-    { gdrive, trello }: { trello: TrelloService, gdrive: GDriveService }
+    { gdrive, trello }: { trello: TrelloService; gdrive: GDriveService }
 ) {
     const uploader = new UploaderService(gdrive, trello, config.milestones, config.upload.fileMask)
 
@@ -17,7 +17,6 @@ export async function bindUploader<T extends ContextMessageUpdate>(
         ctx.upload = uploader
         return next()
     })
-
 
     debug('Uploader initialized.')
 

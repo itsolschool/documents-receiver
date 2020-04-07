@@ -4,7 +4,7 @@ import bluebird from 'bluebird'
 
 const debug = require('debug')('bot:context:session')
 
-export function bindSession<T extends ContextMessageUpdate>(bot: Telegraf<T>, redisUrl?: string) {
+export async function bindSession<T extends ContextMessageUpdate>(bot: Telegraf<T>, redisUrl?: string) {
     if (!redisUrl) {
         bot.use(session())
         debug('InApp session started. No Redis used.')
