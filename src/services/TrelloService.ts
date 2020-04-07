@@ -121,4 +121,8 @@ export default class TrelloService extends Trello {
 
         await this.deleteBoard(board.id)
     }
+
+    public attachmentsUrlForCard(cardId: string) {
+        return `/1/cards/${cardId}/attachments`
+    }
 }
