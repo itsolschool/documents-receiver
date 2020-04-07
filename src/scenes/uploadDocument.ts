@@ -1,17 +1,12 @@
 import { WizardScene } from '../helpers/wizard'
 import strings, { __ } from '../helpers/strings'
 import { CallbackButton, Composer, ContextMessageUpdate, Extra, Markup } from 'telegraf'
-import format from 'string-template'
 import { SCENE } from '../const/sceneId'
 import urlRegex from 'url-regex'
 import { drive_v3 } from 'googleapis'
-import Document from '../models/Document'
-import request from 'request'
 import { ExtraEditMessage } from 'telegraf/typings/telegram-types'
 import * as url from 'url'
-import { transaction } from 'objection'
 import Team from '../models/Team'
-import { PassThrough } from 'stream'
 import Schema$File = drive_v3.Schema$File
 
 const phrases = strings.uploadDocument
@@ -32,10 +27,7 @@ const teamSelector = new Composer()
         const teamId = +ctx.match[1]
         const team = await Team.query().findById(teamId)
 
-        await ctx.editMessageText(
-            __('uploadDocument.teamChosen__html', { team: team.name }),
-            Extra.HTML(true) as ExtraEditMessage
-        )
+        await ctx.editMessageText(phrases.teamChosen__html({ team: team.name }), Extra.HTML(true) as ExtraEditMessage)
 
         ctx.wizard.state['teamId'] = teamId
         ctx.wizard.next()
@@ -70,7 +62,7 @@ const teamSelector = new Composer()
     })
 
 function replyWithMilestonesAsker(ctx: ContextMessageUpdate) {
-    const buttons = ctx.config.milestones.map((title, i) => [Markup.callbackButton(title, `selMile${i}`)])
+    const buttons = ctx.config.milestones.map(({ title, slug }) => [Markup.callbackButton(title, `selMile${slug}`)])
     return ctx.reply(
         __('uploadDocument.askMilestone'),
         Markup.inlineKeyboard(buttons)
@@ -80,121 +72,20 @@ function replyWithMilestonesAsker(ctx: ContextMessageUpdate) {
 }
 
 // "selMile0000" => 0000
-const milestoneSelector = Composer.action(/^selMile(\d+)$/, async (ctx) => {
-    const milestoneId = +ctx.match[1]
+const milestoneSelector = Composer.action(/^selMile(.+)$/, async (ctx) => {
+    const milestoneSlug = ctx.match[1]
+    const milestone = ctx.config.milestones.find(({ slug }) => slug === milestoneSlug)
 
     await ctx.editMessageText(
-        __('uploadDocument.milestoneChosen__html', { milestone: ctx.config.milestones[milestoneId] }),
+        __('uploadDocument.milestoneChosen__html', { milestone: milestone.title }),
         Extra.HTML(true) as ExtraEditMessage
     )
 
-    ctx.wizard.state['milestoneId'] = milestoneId
+    ctx.wizard.state['milestoneSlug'] = milestoneSlug
     ctx.wizard.next()
 
     await ctx.reply(__('uploadDocument.askDocument'))
 })
-
-async function handleGDriveUpload(
-    ctx: Exclude<ContextMessageUpdate, 'user'>,
-    { gdriveFileId, teamId, milestoneId }: { gdriveFileId?: string; teamId: number; milestoneId: number }
-): Promise<any> {
-    const progressMessage = await ctx.reply(__('uploadDocument.uploadProgress'))
-
-    const team = await Team.query().findById(teamId)
-
-    const teamMilestoneDocuments = Document.query().where({
-        teamId,
-        milestone: milestoneId
-    })
-
-    const currentDocumentsCount = await teamMilestoneDocuments.resultSize()
-
-    const name = format(ctx.config.upload.fileMask, {
-        versionNumber: currentDocumentsCount + 1,
-        milestoneTitle: ctx.config.milestones[milestoneId],
-        milestoneNum: milestoneId + 1
-    })
-    const resource: Schema$File = {
-        name,
-        parents: [team.gdriveFolderId],
-        properties: {
-            ITSS_team_id: teamId.toString()
-        }
-    }
-
-    let gdrivePromise
-    if (gdriveFileId) {
-        gdrivePromise = ctx.gdrive.drive.files.copy({ fileId: gdriveFileId, requestBody: resource, fields: 'id' })
-    } else {
-        const link = await ctx.telegram.getFileLink(ctx.message.document.file_id)
-        const media = {
-            mimeType: ctx.message.document.mime_type,
-            body: request(link).pipe(new PassThrough())
-        }
-        gdrivePromise = ctx.gdrive.drive.files.create({ requestBody: resource, media, fields: 'id' })
-    }
-
-    const trelloAttachmentsPath = `/1/cards/${team.trelloCardId}/attachments`
-
-    let insertedDocument
-    try {
-        const {
-            data: { id: newFileId }
-        } = await gdrivePromise
-        const gdriveAccessUrl = ctx.gdrive.getLinkForFile(newFileId)
-
-        const { id: trelloAttachId } = await ctx.trello.post({
-            path: trelloAttachmentsPath,
-            options: { name, url: gdriveAccessUrl }
-        })
-
-        insertedDocument = await Document.query().insertAndFetch({
-            teamId,
-            gdriveFileId: newFileId,
-            trelloAttachmentId: trelloAttachId,
-            milestone: milestoneId
-        })
-    } catch (e) {
-        await ctx.telegram.editMessageText(
-            ctx.chat.id,
-            progressMessage.message_id,
-            undefined,
-            __('uploadDocument.errorUploading')
-        )
-        await ctx.scene.leave()
-        throw e
-    }
-
-    const groupFolderLink = ctx.gdrive.getLinkForFile(team.gdriveFolderId)
-    await ctx.telegram.editMessageText(
-        ctx.chat.id,
-        progressMessage.message_id,
-        undefined,
-        __('uploadDocument.successUploading__html', {
-            filename: ctx.config.milestones[milestoneId],
-            folderLink: groupFolderLink
-        }),
-        Extra.HTML(true) as ExtraEditMessage
-    )
-
-    await transaction(Document.knex(), async (tx) => {
-        const staleDocumentsQ = teamMilestoneDocuments.transacting(tx).whereNot({
-            [Document.idColumn]: insertedDocument.$id(),
-            trelloAttachmentId: null
-        })
-
-        const staleDocuments = await staleDocumentsQ
-        await Promise.all(
-            staleDocuments.map(({ trelloAttachmentId: attachmentId }) =>
-                ctx.trello.delete({ path: `${trelloAttachmentsPath}/${attachmentId}` }).catch((e) => {
-                    if (e.statusCode !== 404) throw e
-                })
-            )
-        )
-
-        await staleDocumentsQ.patch({ trelloAttachmentId: null })
-    })
-}
 
 const fileGetter = new Composer()
     .on('text', async (ctx) => {
@@ -217,23 +108,84 @@ const fileGetter = new Composer()
             return ctx.reply(__('uploadDocument.wrongFileType'))
         }
 
-        await handleGDriveUpload(ctx, {
-            gdriveFileId: fileId,
-            milestoneId: ctx.wizard.state['milestoneId'],
-            teamId: ctx.wizard.state['teamId']
-        })
+        const progressMessage = await ctx.reply(__('uploadDocument.uploadProgress'))
+
+        const milestone = ctx.config.milestones.find(({ slug }) => slug === ctx.wizard.state['milestoneSlug'])
+        const team = await Team.query().findById(ctx.wizard.state['teamId'])
+        try {
+            await ctx.upload.copyFromGDrive(fileId, {
+                milestoneSlug: milestone.slug,
+                team
+            })
+        } catch (e) {
+            await ctx.telegram.editMessageText(
+                ctx.chat.id,
+                progressMessage.message_id,
+                undefined,
+                __('uploadDocument.errorUploading')
+            )
+            await ctx.scene.leave()
+            throw e // чтобы засечь в sentry
+        }
+
+        const groupFolderLink = ctx.gdrive.getLinkForFile(team.gdriveFolderId)
+        await ctx.telegram.editMessageText(
+            ctx.chat.id,
+            progressMessage.message_id,
+            undefined,
+            __('uploadDocument.successUploading__html', {
+                documentTitle: milestone.title,
+                folderLink: groupFolderLink
+            }),
+            Extra.HTML(true) as ExtraEditMessage
+        )
+
         return ctx.scene.enter(SCENE.MAIN)
     })
     .on('document', async (ctx) => {
-        const allowedFile = ctx.config.upload.allowedMIMEs.includes(ctx.message.document.mime_type)
+        const documentMime = ctx.message.document.mime_type
+
+        const allowedFile = ctx.config.upload.allowedMIMEs.includes(documentMime)
         if (!allowedFile) {
             return ctx.reply(__('uploadDocument.wrongFileType'))
         }
 
-        await handleGDriveUpload(ctx, {
-            milestoneId: ctx.wizard.state['milestoneId'],
-            teamId: ctx.wizard.state['teamId']
-        })
+        const progressMessage = await ctx.reply(__('uploadDocument.uploadProgress'))
+
+        const milestone = ctx.config.milestones.find(({ slug }) => slug === ctx.wizard.state['milestoneSlug'])
+        const team = await Team.query().findById(ctx.wizard.state['teamId'])
+        try {
+            const url = await ctx.telegram.getFileLink(ctx.message.document.file_id)
+            await ctx.upload.uploadTelegramDocument(
+                { url, mime: documentMime },
+                {
+                    milestoneSlug: milestone.slug,
+                    team: team
+                }
+            )
+        } catch (e) {
+            await ctx.telegram.editMessageText(
+                ctx.chat.id,
+                progressMessage.message_id,
+                undefined,
+                __('uploadDocument.errorUploading')
+            )
+            await ctx.scene.leave()
+            throw e // чтобы засечь в sentry
+        }
+
+        const groupFolderLink = ctx.gdrive.getLinkForFile(team.gdriveFolderId)
+        await ctx.telegram.editMessageText(
+            ctx.chat.id,
+            progressMessage.message_id,
+            undefined,
+            __('uploadDocument.successUploading__html', {
+                documentTitle: milestone.title,
+                folderLink: groupFolderLink
+            }),
+            Extra.HTML(true) as ExtraEditMessage
+        )
+
         return ctx.scene.enter(SCENE.MAIN)
     })
 
