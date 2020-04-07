@@ -5,9 +5,8 @@ declare module 'bot-config' {
     export type BotConfig = {
         /**
          * Масств названий всех документов по порядку, которые должна предоставить команда.
-         *  TODO убрать это в бд.
          */
-        milestones: string[]
+        milestones: Array<{ slug: string; title: string }>
         upload: {
             /**
              * {@link https://ru.wikipedia.org/wiki/Список_MIME-типов|Все MIME} типы файлов, которые может сохранять бот.
@@ -16,7 +15,6 @@ declare module 'bot-config' {
             /**
              * Маска имени файла, при сохранении на GDrive.
              *
-             * @param milestoneNum Номер документа по порядку из {@link milestones}, начиная с 1
              * @param milestoneTitle Название документа из {@link milestones}
              * @param versionNumber Номер версии файла
              */

@@ -26,7 +26,6 @@ exports.up = function(knex) {
                 .references('teams.team_id')
                 .onDelete('NO ACTION')
             t.increments('document_id').primary()
-            // TODO возможно для milestone'ов надо будет сделать отдельную таблицу
             t.integer('milestone')
                 .notNullable()
                 .comment('Номер периода, к которому относится этот документ')
