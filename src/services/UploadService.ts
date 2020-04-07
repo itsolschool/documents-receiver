@@ -15,7 +15,7 @@ export type UploadContext = {
     team: Team
 }
 
-export class UploadService {
+export default class UploadService {
     constructor(
         private driveService: GDriveService,
         private trelloService: TrelloService,
