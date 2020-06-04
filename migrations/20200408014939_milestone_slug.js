@@ -27,7 +27,7 @@ exports.up = function(knex) {
         })
         .raw(
             milestones
-                .map(({ slug }, i) => `UPDATE documents SET milestone_slug = '${slug}' WHERE milestone = ${i}'`)
+                .map(({ slug }, i) => `UPDATE documents SET milestone_slug = '${slug}' WHERE milestone = ${i}`)
                 .join(';')
         )
         .table('documents', (t) => t.dropColumn('milestone'))
