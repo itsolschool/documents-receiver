@@ -1,5 +1,5 @@
 import { WizardScene } from '../helpers/wizard'
-import { __ } from '../helpers/strings'
+import phrases from '../helpers/strings'
 import Telegraf, { Composer, ContextMessageUpdate, Markup, Middleware } from 'telegraf'
 import Team from '../models/Team'
 import { GREEN_MARK, RED_CROSS, WHITE_QUESTION_MARK } from '../const/emojies'
@@ -12,18 +12,18 @@ function onlyText(cb: Middleware<ContextMessageUpdate>): Middleware<ContextMessa
         if (ctx.message.text?.length > 1 && !ctx.message.text.startsWith('/')) {
             return cb(ctx, next)
         }
-        ctx.reply(__('errors.notText'))
+        ctx.reply(phrases.errors.notText())
         return next
     }
 }
 
 const confirmStep = new Composer()
-    .hears(__('addTeam.confirmYes'), async (ctx, next) => {
+    .hears(phrases.addTeam.confirmYes(), async (ctx, next) => {
         ctx.wizard.next()
         ctx.wizard.step(ctx, next)
     })
-    .hears(__('addTeam.confirmNo'), async (ctx) => {
-        await ctx.reply(__('addTeam.retry'))
+    .hears(phrases.addTeam.confirmNo(), async (ctx) => {
+        await ctx.reply(phrases.addTeam.retry())
         ctx.wizard.selectStep(0)
         return ctx.scene.reenter() // сразу обрабатываем имя
     })
@@ -38,10 +38,10 @@ const scene = new WizardScene(
                 .where('name', ctx.message.text)
                 .first()
         ) {
-            return ctx.reply(__('addTeam.nameNotUniq'))
+            return ctx.reply(phrases.addTeam.nameNotUniq())
         }
         ctx.wizard.next()
-        await ctx.reply(__('addTeam.askSchool'))
+        await ctx.reply(phrases.addTeam.askSchool())
         return next()
     }),
     onlyText(async (ctx, next) => {
@@ -52,8 +52,8 @@ const scene = new WizardScene(
             name: ctx.wizard.state['teamName']
         }
         await ctx.replyWithHTML(
-            __('addTeam.confirm__html', team),
-            Markup.keyboard([[Markup.button(__('addTeam.confirmYes')), Markup.button(__('addTeam.confirmNo'))]])
+            phrases.addTeam.confirm__html(team),
+            Markup.keyboard([[Markup.button(phrases.addTeam.confirmYes()), Markup.button(phrases.addTeam.confirmNo())]])
                 .resize()
                 .oneTime()
                 .extra()
@@ -76,7 +76,7 @@ const scene = new WizardScene(
         }
         return ctx.scene.enter(SCENE.MAIN)
     }
-).enter(Telegraf.reply(__('addTeam.askName')))
+).enter(Telegraf.reply(phrases.addTeam.askName()))
 
 function getMarkByState(state: Error | boolean) {
     if (state instanceof Error) return RED_CROSS
@@ -86,7 +86,7 @@ function getMarkByState(state: Error | boolean) {
 
 async function showServiceBindingProgress(ctx: ContextMessageUpdate, team: Team): Promise<void> {
     const message = await ctx.reply(
-        __('addTeam.result', {
+        phrases.addTeam.result({
             trello: getMarkByState(null),
             gdrive: getMarkByState(null)
         })
@@ -100,7 +100,7 @@ async function showServiceBindingProgress(ctx: ContextMessageUpdate, team: Team)
             ctx.chat.id,
             message.message_id,
             void 0,
-            __('addTeam.result', {
+            phrases.addTeam.result({
                 trello: getMarkByState(trello),
                 gdrive: getMarkByState(gdrive),
                 errors: [gdrive, trello]
@@ -125,7 +125,7 @@ async function sendInviteLink(ctx: ContextMessageUpdate, team: Team) {
 
     // @ts-ignore -- потому что removeKeyboard должен принимать boolean, а не строку
     const removeMarkup = Markup.removeKeyboard(true).extra()
-    await ctx.reply(__('addTeam.link', { link }), removeMarkup as ExtraEditMessage)
+    await ctx.reply(phrases.addTeam.link({ link }), removeMarkup as ExtraEditMessage)
 }
 
 export default scene

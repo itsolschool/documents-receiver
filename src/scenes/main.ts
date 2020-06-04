@@ -1,7 +1,7 @@
 import { BaseScene, ContextMessageUpdate, Markup, Stage } from 'telegraf'
 import checkUserIsAdmin from '../middlewares/checkUserIsAdmin'
 import { SCENE } from '../const/sceneId'
-import { __ } from '../helpers/strings'
+import phrases from '../helpers/strings'
 import { GREEN_MARK, RED_CROSS, WHITE_QUESTION_MARK } from '../const/emojies'
 
 enum ACTIONS {
@@ -23,26 +23,31 @@ async function replyWithMainView(ctx: ContextMessageUpdate) {
         // @ts-ignore -- потому что telegraf хочет кнопки только одного типа
         const ADMIN_MARKUP = Markup.inlineKeyboard([
             [
-                Markup.callbackButton(__('main.btns.addTeam'), ACTIONS.CREATE_TEAM),
-                Markup.callbackButton(__('main.btns.uploadDocuments'), ACTIONS.UPLOAD_DOCUMENT)
+                Markup.callbackButton(phrases.main.btns.addTeam(), ACTIONS.CREATE_TEAM),
+                Markup.callbackButton(phrases.main.btns.uploadDocuments(), ACTIONS.UPLOAD_DOCUMENT)
             ],
-            [Markup.callbackButton(__('main.btns.gdriveHealthcheck'), ACTIONS.HEALTH_CHECK)],
+            [Markup.callbackButton(phrases.main.btns.gdriveHealthcheck(), ACTIONS.HEALTH_CHECK)],
             [Markup.urlButton('GDrive', ctx.gdrive.getLinkForFile(ctx.config.gdrive.rootDirId))]
         ])
             .oneTime(true)
             .resize(true)
             .extra()
-        return ctx.reply(__('main.admin'), ADMIN_MARKUP)
+        return ctx.reply(phrases.main.admin(), ADMIN_MARKUP)
     } else {
         //@ts-ignore -- опять только кнопки одного типа
         const USER_MARKUP = Markup.inlineKeyboard([
-            [Markup.callbackButton(__('main.btns.uploadDocuments'), ACTIONS.UPLOAD_DOCUMENT)],
-            [Markup.urlButton(__('main.btns.uploadedFiles'), ctx.gdrive.getLinkForFile(ctx.user.team.gdriveFolderId))]
+            [Markup.callbackButton(phrases.main.btns.uploadDocuments(), ACTIONS.UPLOAD_DOCUMENT)],
+            [
+                Markup.urlButton(
+                    phrases.main.btns.uploadedFiles(),
+                    ctx.gdrive.getLinkForFile(ctx.user.team.gdriveFolderId)
+                )
+            ]
         ])
             .oneTime(true)
             .resize(true)
             .extra()
-        await ctx.reply(__('main.user', { team: ctx.user.team.name }), USER_MARKUP)
+        await ctx.reply(phrases.main.user({ team: ctx.user.team.name }), USER_MARKUP)
     }
 }
 
@@ -77,8 +82,8 @@ async function gdriveHealthcheck(ctx: ContextMessageUpdate) {
         const email = gdrive.serviceAccountEmail,
             folderLink = gdrive.getLinkForFile(gdrive.rootFolderId)
 
-        const keyboard = Markup.inlineKeyboard([Markup.urlButton(__('gdrive.btns.openDirLink'), folderLink)])
-        await ctx.replyWithHTML(__('gdrive.shareDir__html', { email }), keyboard.extra())
+        const keyboard = Markup.inlineKeyboard([Markup.urlButton(phrases.gdrive.btns.openDirLink(), folderLink)])
+        await ctx.replyWithHTML(phrases.gdrive.shareDir__html({ email }), keyboard.extra())
     }
     return replyWithMainView(ctx)
 }

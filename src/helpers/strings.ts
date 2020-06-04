@@ -2,22 +2,6 @@ import lodash from 'lodash'
 import format from 'string-template'
 import { GREEN_MARK, RED_CROSS, WHITE_QUESTION_MARK } from '../const/emojies'
 
-/**
- * @deprecated use phrase.some.path(...data)
- * @param key
- * @param data
- * @private
- */
-export function __(key: string, data?: { [key: string]: string }) {
-    const source = lodash.get(strings, key, '')
-
-    if (key.endsWith('__html')) {
-        data = lodash.mapValues(data, (val) => lodash.escape(val))
-    }
-
-    return format(source || key, data)
-}
-
 type TemplateProcessor = (values?: { [key: string]: string }) => string
 type InstrumentedStringTree<T> = {
     [P in keyof T]: T[P] extends string ? TemplateProcessor : InstrumentedStringTree<T[P]>

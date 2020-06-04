@@ -1,5 +1,5 @@
 import { WizardScene } from '../helpers/wizard'
-import strings, { __ } from '../helpers/strings'
+import phrases from '../helpers/strings'
 import { CallbackButton, Composer, ContextMessageUpdate, Extra, Markup } from 'telegraf'
 import { SCENE } from '../const/sceneId'
 import urlRegex from 'url-regex'
@@ -9,8 +9,6 @@ import * as url from 'url'
 import Team from '../models/Team'
 import Schema$File = drive_v3.Schema$File
 
-const phrases = strings.uploadDocument
-const feedbackPhrases = strings.feedback
 const feedbackUrl = 'https://forms.gle/LgQ9H13rNfTaxqCQ6'
 
 const TEAMS_PAGE_SIZE = 99 // + кнопки пагинации
@@ -27,7 +25,10 @@ const teamSelector = new Composer()
         const teamId = +ctx.match[1]
         const team = await Team.query().findById(teamId)
 
-        await ctx.editMessageText(phrases.teamChosen__html({ team: team.name }), Extra.HTML(true) as ExtraEditMessage)
+        await ctx.editMessageText(
+            phrases.uploadDocument.teamChosen__html({ team: team.name }),
+            Extra.HTML(true) as ExtraEditMessage
+        )
 
         ctx.wizard.state['teamId'] = teamId
         ctx.wizard.next()
@@ -39,7 +40,7 @@ const teamSelector = new Composer()
 
         let teamsBtns = await teamsButtonsWithPagination(page)
         return ctx.editMessageText(
-            __('uploadDocument.askTeam'),
+            phrases.uploadDocument.askTeam(),
             Markup.inlineKeyboard(teamsBtns)
                 .resize()
                 .extra()
@@ -54,7 +55,7 @@ const teamSelector = new Composer()
 
         let teamsBtns = await teamsButtonsWithPagination()
         return ctx.reply(
-            __('uploadDocument.askTeam'),
+            phrases.uploadDocument.askTeam(),
             Markup.inlineKeyboard(teamsBtns)
                 .resize()
                 .extra()
@@ -64,7 +65,7 @@ const teamSelector = new Composer()
 function replyWithMilestonesAsker(ctx: ContextMessageUpdate) {
     const buttons = ctx.config.milestones.map(({ title, slug }) => [Markup.callbackButton(title, `selMile${slug}`)])
     return ctx.reply(
-        __('uploadDocument.askMilestone'),
+        phrases.uploadDocument.askMilestone(),
         Markup.inlineKeyboard(buttons)
             .resize()
             .extra()
@@ -77,14 +78,14 @@ const milestoneSelector = Composer.action(/^selMile(.+)$/, async (ctx) => {
     const milestone = ctx.config.milestones.find(({ slug }) => slug === milestoneSlug)
 
     await ctx.editMessageText(
-        __('uploadDocument.milestoneChosen__html', { milestone: milestone.title }),
+        phrases.uploadDocument.milestoneChosen__html({ milestone: milestone.title }),
         Extra.HTML(true) as ExtraEditMessage
     )
 
     ctx.wizard.state['milestoneSlug'] = milestoneSlug
     ctx.wizard.next()
 
-    await ctx.reply(__('uploadDocument.askDocument'))
+    await ctx.reply(phrases.uploadDocument.askDocument())
 })
 
 const fileGetter = new Composer()
@@ -92,7 +93,7 @@ const fileGetter = new Composer()
         const fileId = getGDriveIdFromLink(ctx.message.text)
 
         if (typeof fileId !== 'string') {
-            return ctx.reply(__('uploadDocument.noLinkFound'))
+            return ctx.reply(phrases.uploadDocument.noLinkFound())
         }
 
         let file: Schema$File
@@ -100,15 +101,15 @@ const fileGetter = new Composer()
             const response = await ctx.gdrive.drive.files.get({ fileId })
             file = response.data
         } catch (e) {
-            await ctx.reply(__('uploadDocument.noAccessToLink'))
+            await ctx.reply(phrases.uploadDocument.noAccessToLink())
             throw e
         }
 
         if (!ctx.config.upload.allowedMIMEs.includes(file.mimeType)) {
-            return ctx.reply(__('uploadDocument.wrongFileType'))
+            return ctx.reply(phrases.uploadDocument.wrongFileType())
         }
 
-        const progressMessage = await ctx.reply(__('uploadDocument.uploadProgress'))
+        const progressMessage = await ctx.reply(phrases.uploadDocument.uploadProgress())
 
         const milestone = ctx.config.milestones.find(({ slug }) => slug === ctx.wizard.state['milestoneSlug'])
         const team = await Team.query().findById(ctx.wizard.state['teamId'])
@@ -122,7 +123,7 @@ const fileGetter = new Composer()
                 ctx.chat.id,
                 progressMessage.message_id,
                 undefined,
-                __('uploadDocument.errorUploading')
+                phrases.uploadDocument.errorUploading()
             )
             await ctx.scene.leave()
             throw e // чтобы засечь в sentry
@@ -133,7 +134,7 @@ const fileGetter = new Composer()
             ctx.chat.id,
             progressMessage.message_id,
             undefined,
-            __('uploadDocument.successUploading__html', {
+            phrases.uploadDocument.successUploading__html({
                 documentTitle: milestone.title,
                 folderLink: groupFolderLink
             }),
@@ -147,10 +148,10 @@ const fileGetter = new Composer()
 
         const allowedFile = ctx.config.upload.allowedMIMEs.includes(documentMime)
         if (!allowedFile) {
-            return ctx.reply(__('uploadDocument.wrongFileType'))
+            return ctx.reply(phrases.uploadDocument.wrongFileType())
         }
 
-        const progressMessage = await ctx.reply(__('uploadDocument.uploadProgress'))
+        const progressMessage = await ctx.reply(phrases.uploadDocument.uploadProgress())
 
         const milestone = ctx.config.milestones.find(({ slug }) => slug === ctx.wizard.state['milestoneSlug'])
         const team = await Team.query().findById(ctx.wizard.state['teamId'])
@@ -168,7 +169,7 @@ const fileGetter = new Composer()
                 ctx.chat.id,
                 progressMessage.message_id,
                 undefined,
-                __('uploadDocument.errorUploading')
+                phrases.uploadDocument.errorUploading()
             )
             await ctx.scene.leave()
             throw e // чтобы засечь в sentry
@@ -179,7 +180,7 @@ const fileGetter = new Composer()
             ctx.chat.id,
             progressMessage.message_id,
             undefined,
-            __('uploadDocument.successUploading__html', {
+            phrases.uploadDocument.successUploading__html({
                 documentTitle: milestone.title,
                 folderLink: groupFolderLink
             }),
@@ -197,8 +198,8 @@ scene.enter((ctx, next) => {
     setTimeout(
         () =>
             ctx.reply(
-                feedbackPhrases.ask(),
-                Markup.inlineKeyboard([Markup.urlButton(feedbackPhrases.btn(), feedbackUrl)]).extra()
+                phrases.feedback.ask(),
+                Markup.inlineKeyboard([Markup.urlButton(phrases.feedback.btn(), feedbackUrl)]).extra()
             ),
         15 * 60 * 60000 // 15 min
     )

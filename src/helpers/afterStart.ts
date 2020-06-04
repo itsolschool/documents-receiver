@@ -2,7 +2,7 @@ import Team from '../models/Team'
 import AppVar, { APP_VAR_KEYS } from '../models/AppVar'
 import GDriveService from '../services/GDriveService'
 import TrelloService from '../services/TrelloService'
-import { __ } from './strings'
+import phrases from './strings'
 import { transaction } from 'objection'
 import { captureException } from '@sentry/node'
 import { BotConfig } from 'bot-config'
@@ -73,7 +73,7 @@ async function setupTrelloSpawnList({ trello, config }: ServicesAndConfig) {
 
     const list = await trello.addList({
         idBoard: config.trello.boardId,
-        name: __('init.trello.spawnListName'),
+        name: phrases.init.trello.spawnListName(),
         pos: 'top'
     })
 
@@ -88,10 +88,10 @@ async function setupTrelloSpawnList({ trello, config }: ServicesAndConfig) {
 
     debug('Creating help card...')
     await trello.addCard({
-        name: __('init.trello.cardName'),
+        name: phrases.init.trello.cardName(),
         idList: list.id,
         // @ts-ignore -- потому что в оригинальной библиотеке не завезли полные типы для API
-        desc: __('init.trello.cardDesc')
+        desc: phrases.init.trello.cardDesc()
     })
 
     debug('Trello Spawn List created: %j', list)

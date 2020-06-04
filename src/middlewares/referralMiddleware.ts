@@ -1,5 +1,5 @@
 import Telegraf, { Composer, ContextMessageUpdate } from 'telegraf'
-import { __ } from '../helpers/strings'
+import phrases from '../helpers/strings'
 import Team from '../models/Team'
 import User from '../models/User'
 
@@ -21,11 +21,13 @@ export function setupReferralMiddleware(bot: Telegraf<ContextMessageUpdate>) {
                         .eager('members')
                         .first()
 
-                    if (!candidateTeam) return ctx.reply(__('referral.wrongToken'))
+                    if (!candidateTeam) {
+                        return ctx.reply(phrases.referral.wrongToken())
+                    }
 
                     if (candidateTeam.capacity <= candidateTeam.members.length)
                         return ctx.reply(
-                            __('referral.teamIsOvercrowded', {
+                            phrases.referral.teamIsOvercrowded({
                                 team: candidateTeam.name,
                                 count: candidateTeam.capacity.toString()
                             })
@@ -33,10 +35,10 @@ export function setupReferralMiddleware(bot: Telegraf<ContextMessageUpdate>) {
 
                     ctx.session[CANDIDATE_TEAM_ID] = candidateTeam.$id()
 
-                    return ctx.reply(__('referral.askName', { team: candidateTeam.name }))
+                    return ctx.reply(phrases.referral.askName({ team: candidateTeam.name }))
                 }),
 
-                Telegraf.reply(__('referral.referralRequired'))
+                Telegraf.reply(phrases.referral.referralRequired())
             ]),
             // id команды есть. значит сейчас пользователь рассказывает своё имя
             async (ctx, next) => {
@@ -52,7 +54,7 @@ export function setupReferralMiddleware(bot: Telegraf<ContextMessageUpdate>) {
                 ctx.session[CANDIDATE_TEAM_ID] = null
 
                 await ctx.reply(
-                    __('referral.final', {
+                    phrases.referral.final({
                         team: user.team.name,
                         name: user.fullName
                     })

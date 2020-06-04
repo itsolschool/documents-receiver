@@ -13,7 +13,7 @@ import { SCENE } from '../../const/sceneId'
 const { compose, unwrap, optional, command } = BaseScene
 
 interface WizardSceneOptions<TContext extends SceneContextMessageUpdate> extends BaseSceneOptions<TContext> {
-    steps: Middleware<TContext>[],
+    steps: Middleware<TContext>[]
     cancelable?: boolean
 }
 
