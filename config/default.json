@@ -2,19 +2,19 @@
   "milestones": [
     {
       "slug": "intro presentation",
-      "name": "Презентация проекта"
+      "title": "Презентация проекта"
     },
     {
       "slug": "testing protocol",
-      "name": "Протокол тестирования"
+      "title": "Протокол тестирования"
     },
     {
       "slug": "proof of work",
-      "name": "Подтверждение эксплуатации"
+      "title": "Подтверждение эксплуатации"
     },
     {
       "slug": "final presentation",
-      "name": "Финальная презентация на сайт ШИР"
+      "title": "Финальная презентация на сайт ШИР"
     }
   ],
   "upload": {
