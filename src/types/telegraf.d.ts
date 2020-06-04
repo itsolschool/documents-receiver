@@ -1,10 +1,11 @@
 import * as tt from '../../node_modules/telegraf/typings/telegram-types.d'
 import User from '../models/User'
 import GDriveService from '../services/GDriveService'
+import TrelloService from '../services/TrelloService'
+import UploadService from '../services/UploadService'
 import { Extra, Middleware, SceneContext, SceneContextMessageUpdate } from 'telegraf'
 import { RedisClient } from 'redis'
 import WizardContext from '../helpers/wizard/context'
-import TrelloService from '../services/TrelloService'
 import { BotConfig } from 'bot-config'
 
 declare module 'telegraf' {
@@ -17,6 +18,7 @@ declare module 'telegraf' {
         session: any // вот тут творится полная анархия. одни классы пишут, другие пытаются использовать...
         gdrive: GDriveService
         trello: TrelloService
+        upload: UploadService
 
         replyWithMarkdown(markdown: string, extra?: tt.ExtraEditMessage | Extra): Promise<tt.Message>
     }

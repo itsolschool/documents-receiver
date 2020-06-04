@@ -16,6 +16,7 @@ import { setupReferralMiddleware } from './middlewares/referralMiddleware'
 import sentryExtraFromCtx from './helpers/sentryExtraFromCtx'
 import User from './models/User'
 import { BotConfig } from 'bot-config'
+import { bindUploader } from './helpers/uploader'
 
 const config = require('config') as BotConfig
 const debug = require('debug')('bot')
@@ -61,9 +62,10 @@ async function setupBot() {
 
     bindConfig(bot, config)
 
-    const redis = bindSession(bot, config.redis)
+    const redis = await bindSession(bot, config.redis)
     const gdrive = await bindGDrive(bot, config.gdrive.serviceAccount, config.gdrive.rootDirId)
     const trello = await bindTrello(bot, config.trello['appKey:token'])
+    const uploader = await bindUploader(bot, config, { gdrive, trello })
 
     bot.use(sentryExtraFromCtx('session'))
 
@@ -90,7 +92,8 @@ async function setupBot() {
         gdrive,
         trello,
         config,
-        bot
+        bot,
+        uploader
     }
     return boundServices
 }

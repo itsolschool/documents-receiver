@@ -7,6 +7,7 @@ import { transaction } from 'objection'
 import { captureException } from '@sentry/node'
 import { BotConfig } from 'bot-config'
 import Telegraf, { ContextMessageUpdate } from 'telegraf'
+import UploadService from '../services/UploadService'
 
 const debug = require('debug')('bot:after')
 
@@ -15,6 +16,7 @@ interface ServicesAndConfig {
     trello: TrelloService
     config: BotConfig
     bot: Telegraf<ContextMessageUpdate>
+    uploader: UploadService
 }
 
 export default async (args: ServicesAndConfig) =>

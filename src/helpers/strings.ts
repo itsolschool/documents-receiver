@@ -140,7 +140,7 @@ const strings = {
         uploadProgress: `${WHITE_QUESTION_MARK} Загружаю документ...`,
         errorUploading: `${RED_CROSS} К сожалению произошла ошибка.\nПопробуй загрузить документ попозже`,
         successUploading__html: `
-${GREEN_MARK} Я загрузил: <i>{filename}</i>.
+${GREEN_MARK} Я загрузил: <i>{documentTitle}</i>.
 
 Можешь посмотреть <a href="{folderLink}">остальные файлы</a>
 `
