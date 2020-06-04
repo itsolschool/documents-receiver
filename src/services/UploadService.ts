@@ -61,7 +61,7 @@ export default class UploadService {
         { milestoneSlug, team }: UploadContext
     ) {
         const insertedDocument = await Document.query().insertAndFetch({
-            team,
+            teamId: team.$id(),
             gdriveFileId: this.driveService.getLinkForFile(gdriveFile.id),
             trelloAttachmentId: trelloAttachId,
             milestoneSlug: milestoneSlug

@@ -4,7 +4,7 @@ import { Config as KnexConfig } from 'knex'
 declare module 'bot-config' {
     export type BotConfig = {
         /**
-         * Масств названий всех документов по порядку, которые должна предоставить команда.
+         * Массив названий всех документов по порядку, которые должна предоставить команда.
          */
         milestones: Array<{ slug: string; title: string }>
         upload: {
