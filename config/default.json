@@ -1,20 +1,16 @@
 {
   "milestones": [
     {
-      "slug": "intro presentation",
-      "title": "Презентация проекта"
+      "slug": "application",
+      "title": "Заявка на проект"
     },
     {
-      "slug": "testing protocol",
-      "title": "Протокол тестирования"
+      "slug": "workshop prepare",
+      "title": "Подготовка к мастерской"
     },
     {
-      "slug": "proof of work",
-      "title": "Подтверждение эксплуатации"
-    },
-    {
-      "slug": "final presentation",
-      "title": "Финальная презентация на сайт ШИР"
+      "slug": "project concept",
+      "title": "Концепция проекта"
     }
   ],
   "upload": {
@@ -27,7 +23,7 @@
       "application/vnd.google-apps.spreadsheet",
       "application/pdf"
     ],
-    "fileMask": "{milestoneNum}. {milestoneTitle} v{versionNumber}"
+    "fileMask": "{milestoneTitle} v{versionNumber}"
   },
   "server": {
     "port": "!! FROM ENV !!"
