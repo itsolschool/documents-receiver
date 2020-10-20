@@ -94,6 +94,7 @@ export default class UploadService {
                 .whereNotNull('trelloAttachmentId')
                 .andWhere('attachedTime', '<', document.attachedTime)
                 .andWhere('teamId', team.$id())
+                .andWhere('milestoneSlug', document.milestoneSlug)
 
             const attachmentsUrl = this.trelloService.attachmentsUrlForCard(team.trelloCardId)
 
