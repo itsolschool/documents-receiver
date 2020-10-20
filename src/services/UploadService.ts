@@ -38,7 +38,11 @@ export default class UploadService {
             })
         ).data
 
-        const trelloAttachId = await this.attachFileToCard(gdriveFile, context.team.trelloCardId)
+        const trelloAttachId = await this.attachGDriveFileToCard(
+            gdriveFile.id,
+            resource.name,
+            context.team.trelloCardId
+        )
         await this.insertDocument(gdriveFile, trelloAttachId, context)
         return gdriveFile
     }
@@ -50,7 +54,11 @@ export default class UploadService {
             await this.driveService.drive.files.copy({ fileId: gdriveFileId, requestBody: resource, fields: 'id' })
         ).data
 
-        const trelloAttachId = await this.attachFileToCard(gdriveFile, context.team.trelloCardId)
+        const trelloAttachId = await this.attachGDriveFileToCard(
+            gdriveFile.id,
+            resource.name,
+            context.team.trelloCardId
+        )
         await this.insertDocument(gdriveFile, trelloAttachId, context)
         return gdriveFile
     }
@@ -71,13 +79,13 @@ export default class UploadService {
         //process.nextTick(() => this.cleanupStaleTrelloAttachments(insertedDocument.$id(), team))
     }
 
-    private async attachFileToCard(gdriveFile: Schema$File, cardId: string) {
-        const gdriveAccessUrl = this.driveService.getLinkForFile(gdriveFile.id)
+    private async attachGDriveFileToCard(gdriveFileId: string, title: string, cardId: string) {
+        const gdriveAccessUrl = this.driveService.getLinkForFile(gdriveFileId)
 
         const trelloAttachmentsPath = this.trelloService.attachmentsUrlForCard(cardId)
         const { id: trelloAttachId } = await this.trelloService.post({
             path: trelloAttachmentsPath,
-            options: { name: gdriveFile.name, url: gdriveAccessUrl }
+            options: { name: title, url: gdriveAccessUrl }
         })
         return trelloAttachId
     }
