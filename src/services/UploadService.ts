@@ -76,7 +76,7 @@ export default class UploadService {
         })
 
         // TODO убрать потенциальную утечку и заюзать какой-нибудь task
-        //process.nextTick(() => this.cleanupStaleTrelloAttachments(insertedDocument.$id(), team))
+        process.nextTick(() => this.cleanupStaleTrelloAttachments(insertedDocument.$id(), team))
     }
 
     private async attachGDriveFileToCard(gdriveFileId: string, title: string, cardId: string) {
