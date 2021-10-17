@@ -23,7 +23,7 @@
     "googleapis": "^47.0.0",
     "knex": "^0.20.2",
     "lodash": "^4.17.15",
-    "objection": "^1.6.11",
+    "objection": "^2.2.16",
     "pg": "^7.12.1",
     "request": "^2.88.0",
     "string-template": "^1.0.0",
