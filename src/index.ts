@@ -25,6 +25,7 @@ Sentry.init({ dsn: config.sentry.dsn })
 
 async function setupDb() {
     const knex = Knex({
+        client: 'pg',
         connection: {
             connectionString: config.database.connection,
             ssl: {
