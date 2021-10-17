@@ -1,5 +1,4 @@
 import { JWTInput } from 'google-auth-library/build/src/auth/credentials'
-import { Config as KnexConfig } from 'knex'
 
 declare module 'bot-config' {
     export type BotConfig = {
@@ -76,6 +75,6 @@ declare module 'bot-config' {
         /**
          * {@link https://knexjs.org/#Installation-client}
          */
-        database: KnexConfig
+        database: { connection: string }
     }
 }

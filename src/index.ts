@@ -25,7 +25,12 @@ Sentry.init({ dsn: config.sentry.dsn })
 
 async function setupDb() {
     const knex = Knex({
-        ...config.database,
+        connection: {
+            connectionString: config.database.connection,
+            ssl: {
+                rejectUnauthorized: false
+            }
+        },
         ...knexSnakeCaseMappers()
     })
     Model.knex(knex)
