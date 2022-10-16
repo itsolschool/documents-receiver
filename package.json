@@ -34,7 +34,8 @@
   },
   "scripts": {
     "lint": "prettier --write src/**/*.ts src/*.ts migrations/*.js",
-    "build": "tsc"
+    "build": "tsc",
+    "start": "node dist/index.js"
   },
   "husky": {
     "hooks": {

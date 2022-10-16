@@ -1,0 +1,5 @@
+dist/
+node_modules/
+dev.sqlite3
+latest.dump*
+data/
