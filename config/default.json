@@ -38,10 +38,10 @@
   },
   "gdrive": {
     "serviceAccount": "!! JSON FROM ENV !!",
-    "rootDirId": "1S2S2tfTRGjhJTSBI0Jh7c_ohWXrMiavA"
+    "rootDirId": "!! FRON ENV !!"
   },
   "trello": {
-    "boardId": "5f860c7830ee4b5715b5e0c0",
+    "boardId": "!! FROM ENV !!",
     "appKey:token": "!! FROM ENV !!"
   },
   "sentry": {

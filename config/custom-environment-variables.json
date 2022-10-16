@@ -10,9 +10,11 @@
     "serviceAccount": {
       "__name": "GDRIVE_SERVICE_ACCOUNT",
       "__format": "json"
-    }
+    },
+    "rootDirId": "GDRIVE_ROOT_DIR_ID"
   },
   "trello": {
+    "boardId": "TRELLO_BOARD_ID",
     "appKey:token": "TRELLO_TOKEN_SECRET"
   },
   "sentry": {
