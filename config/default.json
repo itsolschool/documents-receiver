@@ -48,5 +48,6 @@
     "dsn": "!! FROM ENV !!"
   },
   "redis": "!! FROM ENV !!",
-  "database": "!! EXTENDED !!"
+  "database": "!! EXTENDED !!",
+  "askForFeedback": false
 }

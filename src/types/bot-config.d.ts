@@ -76,5 +76,10 @@ declare module 'bot-config' {
          * {@link https://knexjs.org/#Installation-client}
          */
         database: { connection: string }
+
+        /**
+         * Спрашивать ли пользователя фидбек каждый раз после загрузки документа
+         */
+        askForFeedback: boolean
     }
 }
